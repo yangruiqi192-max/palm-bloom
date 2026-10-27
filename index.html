@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050911">
 <title>掌心花开 · 手势三维 V7</title>
-/* 摄像头适中大小，固定为 16:9 */
 <style>
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -72,7 +71,7 @@ input[type=range]{
   top:max(12px,env(safe-area-inset-top));
   right:max(12px,env(safe-area-inset-right));
   width:clamp(112px,32vw,145px)!important;
-aspect-ratio:16/9!important;
+aspect-ratio:4/3!important;
 height:auto!important;
   border-radius:12px;overflow:hidden;
   border:1px solid #9edaff30;background:#000;z-index:8
@@ -105,7 +104,9 @@ height:auto!important;
 @media(max-height:550px){
   header p{display:none}
   .panel{max-height:40%;width:min(490px,78%)}
-}
+}html body #preview{
+  aspect-ratio:4/3!important;
+  }
 </style>
 <script>
 window.addEventListener('error',function(e){
@@ -1191,7 +1192,7 @@ function drawFlower(time){
         for(let i=0;i<22;i++){
           add((i+.3)/22,-1,true);
           add((i+.3)/22,1,true);
-        }
+      }
         for(let i=0;i<14;i++){
           add((i+.5)/14,0,true);
         }
