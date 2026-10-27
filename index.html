@@ -2,908 +2,1138 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080b14">
-<title>掌心花开 · 粒子版 V5</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050911">
+<title>掌心花开 · 手势三维 V7</title>
 <style>
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{
   margin:0;width:100%;height:100%;overflow:hidden;
-  background:#080b14;color:#f7e9ed;
+  background:#050911;color:#e5f1fc;
   font-family:system-ui,"Microsoft YaHei",sans-serif
 }
 body::before{
   content:"";position:fixed;inset:0;pointer-events:none;
-  background:radial-gradient(
-    ellipse at 50% 40%,#39204644,transparent 65%
-  )
+  background:radial-gradient(ellipse at 50% 38%,#10293b55,transparent 65%)
 }
 #scene{
   position:fixed;inset:0;width:100%;height:100%;
-  pointer-events:none
+  touch-action:none
 }
 header{
-  position:fixed;
-  top:max(20px,env(safe-area-inset-top));
+  position:fixed;top:max(20px,env(safe-area-inset-top));
   left:24px;pointer-events:none
 }
-small{font-size:10px;letter-spacing:4px;color:#bba6bc}
-h1{
-  font-size:30px;font-weight:400;
-  letter-spacing:6px;margin:12px 0
-}
-header p{font-size:12px;color:#b4aabd;line-height:1.8}
+small{font-size:10px;letter-spacing:3px;color:#7fa3bb}
+h1{font-size:29px;font-weight:400;letter-spacing:6px;margin:12px 0}
+header p{font-size:12px;color:#9ab0c2;line-height:1.8}
 .panel{
   position:fixed;
   bottom:max(12px,env(safe-area-inset-bottom));
   left:50%;transform:translateX(-50%);
-  width:min(480px,calc(100% - 28px));
-  max-height:43%;overflow:auto;
-  padding:14px 18px;
-  border:1px solid #ffffff20;
-  border-radius:18px;
-  background:#141722ed;
-  backdrop-filter:blur(12px)
+  width:min(490px,calc(100% - 28px));
+  max-height:43%;overflow:auto;padding:14px 18px;
+  border:1px solid #82c9ea24;border-radius:18px;
+  background:#09131ee8;backdrop-filter:blur(12px);
+  box-shadow:0 20px 70px #0007
 }
-.row{display:flex;align-items:center;gap:8px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 button{
   font:inherit;font-size:12px;cursor:pointer;
-  padding:10px 12px;
-  border:1px solid #ffffff25;border-radius:10px;
-  background:#ffffff09;color:#eee;min-height:40px
+  padding:9px 11px;border:1px solid #ffffff25;
+  border-radius:10px;background:#ffffff09;
+  color:#eee;min-height:40px
 }
 button:disabled{opacity:.5;cursor:wait}
-#camera{
-  background:#eab7dc;color:#241529;
-  border:0;font-weight:600
-}
+#camera{background:#c8edff;color:#102336;border:0;font-weight:600}
 #percent{
-  margin-left:auto;font-size:24px;color:#efc1e7;
+  margin-left:auto;font-size:23px;color:#c8edff;
   font-variant-numeric:tabular-nums
 }
 input[type=range]{
-  width:100%;accent-color:#eab7dc;
-  margin:12px 0 2px;min-height:28px
+  width:100%;accent-color:#b8e8ff;
+  margin:10px 0 2px;min-height:28px
 }
 .labels{
   display:flex;justify-content:space-between;
-  font-size:10px;color:#a69bb0
+  font-size:10px;color:#a0b4c4
 }
-#status{
-  font-size:12px;line-height:1.7;
-  margin-top:10px;min-height:22px
-}
-#calibration{
-  display:flex;gap:8px;margin-top:8px;flex-wrap:wrap
-}
-#calibration button{padding:6px 10px;font-size:11px}
+#status{font-size:12px;line-height:1.7;margin-top:10px;min-height:22px}
+#calibration{display:flex;gap:8px;margin-top:8px}
+#calibration button{font-size:11px;padding:6px 10px}
 .note,#diagnostic{
-  font-size:10px;color:#94899e;
+  font-size:10px;color:#91a6b7;
   line-height:1.6;margin:8px 0 0
 }
 #preview{
-  position:fixed;right:16px;
-  top:max(20px,env(safe-area-inset-top));
-  width:220px;aspect-ratio:4/3;
-  border-radius:14px;overflow:hidden;
-  border:1px solid #ffffff30;background:#000
+  position:fixed;
+  top:max(12px,env(safe-area-inset-top));
+  right:max(12px,env(safe-area-inset-right));
+  width:clamp(76px,20vw,110px);aspect-ratio:4/3;
+  border-radius:12px;overflow:hidden;
+  border:1px solid #9edaff30;background:#000;z-index:8
 }
 #video,#bones{
   position:absolute;inset:0;width:100%;height:100%;
   transform:scaleX(-1);object-fit:fill
 }
 #preview span{
-  position:absolute;bottom:7px;left:8px;
-  font-size:10px;padding:3px 7px;
-  background:#0009;border-radius:5px
+  position:absolute;bottom:5px;left:5px;
+  font-size:9px;padding:3px 5px;
+  background:#0009;border-radius:4px
 }
 #boot{
-  position:fixed;top:40%;left:10%;width:80%;
-  font-size:14px;line-height:1.8
+  position:fixed;top:42%;left:10%;width:80%;
+  font-size:13px;line-height:1.8;pointer-events:none
+}
+.palm-stage header,
+.palm-stage .panel,
+.palm-stage #boot,
+.palm-stage #preview span,
+.palm-stage #bones{
+  display:none!important
 }
 @media(max-width:600px){
-  header{left:22px}
-  h1{font-size:27px}
-  #preview{top:130px;right:14px;width:150px}
-  .panel{padding:12px 16px}
+  header{left:20px}
+  h1{font-size:26px}
+  .panel{padding:12px 15px}
 }
 @media(max-height:550px){
   header p{display:none}
-  #preview{top:16px;width:125px}
-  .panel{max-height:40%;width:min(480px,76%)}
+  .panel{max-height:40%;width:min(490px,78%)}
 }
 </style>
+<script>
+window.addEventListener('error',function(e){
+  var node=document.getElementById('boot');
+  if(node){
+    node.hidden=false;
+    node.textContent='程序启动失败：'+e.message;
+  }
+});
+</script>
 </head>
-
 <body>
-<canvas id="scene" aria-label="手势控制的粒子花"></canvas>
-
+<canvas id="scene" aria-label="手势控制的三维粒子花"></canvas>
 <header>
-  <small>PARTICLE BLOOM · V5</small>
+  <small>NEURAL BLOOM · 3D V7</small>
   <h1>掌心花开</h1>
-  <p>握拳收拢 · 张掌绽放<br>让星尘在掌心汇成一朵花</p>
+  <p>张掌绽放 · 转掌跟随<br>识别后进入纯净画面，轻点空白处恢复菜单</p>
 </header>
-
-<p id="boot">
-  正在打开粒子花。如果一直没有显示，
-  请更新浏览器，并确认 JavaScript 已启用。
-</p>
-
+<p id="boot">正在启动粒子花…</p>
 <div id="preview" hidden>
-  <video id="video" autoplay muted
-         playsinline webkit-playsinline></video>
+  <video id="video" autoplay muted playsinline webkit-playsinline></video>
   <canvas id="bones" width="320" height="240"></canvas>
-  <span>将完整手掌放进画面</span>
+  <span>手掌放入画面</span>
 </div>
-
 <section class="panel">
   <div class="row">
     <button id="camera" type="button">开启摄像头</button>
     <button id="flip" type="button">切换后置</button>
+    <button id="reset" type="button">重置朝向</button>
     <span id="percent">65%</span>
   </div>
-
-  <input id="amount" type="range"
-         min="0" max="100" value="65"
-         aria-label="花朵开放程度">
-
+  <input id="amount" type="range" min="0" max="100" value="65" aria-label="花朵开放程度">
   <div class="labels">
     <span>收拢</span>
     <span>关闭摄像头后可手动调节</span>
     <span>盛放</span>
   </div>
-
-  <div id="status" role="status">
-    手动预览 · 拖动滑杆控制粒子花
-  </div>
-
+  <div id="status" role="status">手动预览 · 拖动滑杆控制粒子花</div>
   <div id="calibration" hidden>
     <button id="opened" type="button">① 张掌校准</button>
     <button id="closed" type="button">② 握拳校准</button>
   </div>
-
-  <p id="diagnostic">V5 · 尚未开启识别</p>
+  <p id="diagnostic">V7 · 尚未开启识别</p>
   <p class="note">
-    先张掌，看到绿色骨骼线后慢慢握拳。校准可选。<br>
-    视频仅在本机处理；首次开启识别需要联网下载模型。
+    先张掌，识别后菜单自动隐藏；轻点空白处恢复。<br>
+    首次手掌姿态作为初始朝向。视频在本机处理，模型首次加载需联网。
   </p>
 </section>
-
 <script>
 (function(){
-  const $=id=>document.getElementById(id);
-  const canvas=$('scene');
-  const g=canvas.getContext('2d');
-  const video=$('video');
-  const overlay=$('bones');
-  const bg=overlay.getContext('2d');
-  const input=document.createElement('canvas');
-  const inputCtx=input.getContext('2d');
-  const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const $=id=>document.getElementById(id);
+const canvas=$('scene'),g=canvas.getContext('2d');
+const video=$('video');
+const overlay=$('bones'),bg=overlay.getContext('2d');
+const input=document.createElement('canvas');
+const inputCtx=input.getContext('2d');
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 
-  let W=0,H=0,bloom=.65,target=.65,manual=.65;
-  let engine=null,stream=null;
-  let active=false,starting=false,front=true,epoch=0;
-  let controller=null,points=null,raw=.8;
-  let closed=.46,opened=.94,calibration=null;
-  let lastSeen=0,lastVideo=-1,lastInfer=0;
-  let lastPaint=0,previous=0,frames=0,hits=0;
-  let noticeUntil=0;
+let W=0,H=0,bloom=.65,target=.65,manual=.65;
+let engine=null,stream=null;
+let active=false,starting=false,front=true,epoch=0;
+let controller=null,points=null,raw=.8;
+let closed=.46,opened=.94,calibration=null;
+let lastSeen=0,lastVideo=-1,lastInfer=0;
+let lastPaint=0,previous=0,frames=0,hits=0;
+let noticeUntil=0;const palmMotion={
+  q:[0,0,0,1],
+  target:[0,0,0,1],
+  reference:null,
+  session:null,
+  entered:false
+};
 
-  $('boot').hidden=true;
+function palmUnit(v){
+  const n=Math.hypot(v[0],v[1],v[2]);
+  return n>1e-7?v.map(x=>x/n):null;
+}
 
-  function status(message,hold=0){
-    if(!hold&&performance.now()<noticeUntil)return;
-    if(hold)noticeUntil=performance.now()+hold;
-    if($('status').textContent!==message){
-      $('status').textContent=message;
-    }
+function palmCross(a,b){
+  return [
+    a[1]*b[2]-a[2]*b[1],
+    a[2]*b[0]-a[0]*b[2],
+    a[0]*b[1]-a[1]*b[0]
+  ];
+}
+
+function palmMultiply(a,b){
+  return [
+    a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],
+    a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],
+    a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],
+    a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]
+  ];
+}
+
+function palmSlerp(a,b,t){
+  let d=a.reduce((sum,v,i)=>sum+v*b[i],0);
+  if(d<0){b=b.map(v=>-v);d=-d;}
+  let out;
+  if(d>.9995){
+    out=a.map((v,i)=>v+(b[i]-v)*t);
+  }else{
+    const angle=Math.acos(clamp(d,-1,1));
+    const sin=Math.sin(angle);
+    const u=Math.sin((1-t)*angle)/sin;
+    const v=Math.sin(t*angle)/sin;
+    out=a.map((x,i)=>x*u+b[i]*v);
+  }
+  const n=Math.hypot(...out)||1;
+  return out.map(v=>v/n);
+}
+
+function palmRotate(q,v){
+  const u=[q[0],q[1],q[2]];
+  const uv=palmCross(u,v);
+  const uuv=palmCross(u,uv);
+  return v.map((x,i)=>x+2*(q[3]*uv[i]+uuv[i]));
+}
+
+function palmQuaternion(p){
+  const vector=(a,b)=>[
+    (front?-1:1)*(p[a].x-p[b].x),
+    -(p[a].y-p[b].y),
+    -(p[a].z-p[b].z)
+  ];
+  const y=palmUnit(vector(9,0));
+  if(!y)return null;
+
+  const across=vector(5,17);
+  const dot=across.reduce((sum,v,i)=>sum+v*y[i],0);
+  let x=palmUnit(across.map((v,i)=>v-dot*y[i]));
+  if(!x)return null;
+
+  const z=palmUnit(palmCross(x,y));
+  if(!z)return null;
+  x=palmCross(y,z);
+
+  const m00=x[0],m01=y[0],m02=z[0];
+  const m10=x[1],m11=y[1],m12=z[1];
+  const m20=x[2],m21=y[2],m22=z[2];
+  const trace=m00+m11+m22;
+  let q,k;
+
+  if(trace>0){
+    k=Math.sqrt(trace+1)*2;
+    q=[(m21-m12)/k,(m02-m20)/k,(m10-m01)/k,k/4];
+  }else if(m00>m11&&m00>m22){
+    k=Math.sqrt(1+m00-m11-m22)*2;
+    q=[k/4,(m01+m10)/k,(m02+m20)/k,(m21-m12)/k];
+  }else if(m11>m22){
+    k=Math.sqrt(1+m11-m00-m22)*2;
+    q=[(m01+m10)/k,k/4,(m12+m21)/k,(m02-m20)/k];
+  }else{
+    k=Math.sqrt(1+m22-m00-m11)*2;
+    q=[(m02+m20)/k,(m12+m21)/k,k/4,(m10-m01)/k];
   }
 
-  function resize(){
-    W=innerWidth;
-    H=innerHeight;
-    const d=Math.min(devicePixelRatio||1,1.5);
-    canvas.width=Math.round(W*d);
-    canvas.height=Math.round(H*d);
-    g.setTransform(d,0,0,d,0,0);
+  const n=Math.hypot(...q);
+  return n>1e-7?q.map(v=>v/n):null;
+}
+
+function palmRead(result){
+  const p=result.worldLandmarks&&result.worldLandmarks[0];
+  if(!p)return;
+  const q=palmQuaternion(p);
+  if(!q)return;
+  if(!palmMotion.reference)palmMotion.reference=q;
+
+  const r=palmMotion.reference;
+  palmMotion.target=palmMultiply(q,[-r[0],-r[1],-r[2],r[3]]);
+
+  if(!palmMotion.entered){
+    document.body.classList.add('palm-stage');
+    palmMotion.entered=true;
   }
+}
 
-  addEventListener('resize',resize);
-  resize();
+$('boot').hidden=true;
 
-  const particles=Array.from({length:55},()=>({
-    x:Math.random(),
-    y:Math.random(),
-    s:.4+Math.random()*1.2,
-    v:.005+Math.random()*.012
-  }));
-
-  function project(x,y,z){
-    const depth=y*.84+z*.54;
-    const k=650/(650-depth);
-    return {
-      x:x*k,
-      y:(y*.54-z*.84)*k,
-      d:depth
-    };
+function status(message,hold=0){
+  if(!hold&&performance.now()<noticeUntil)return;
+  if(hold)noticeUntil=performance.now()+hold;
+  if($('status').textContent!==message){
+    $('status').textContent=message;
   }
+}
 
-  function petal(a,t,u,layer,open){
-    const L=150-layer*20;
-    const angle=.12+open*(1.40-layer*.10);
+function resize(){
+  W=innerWidth;H=innerHeight;
+  const d=Math.min(devicePixelRatio||1,1.5);
+  canvas.width=Math.round(W*d);
+  canvas.height=Math.round(H*d);
+  g.setTransform(d,0,0,d,0,0);
+}
+addEventListener('resize',resize);
+resize();
 
-    const r=8+layer*1.5+
-      L*(Math.sin(angle)*t+
-      .16*open*Math.sin(Math.PI*t));
+const particles=Array.from({length:55},()=>({
+  x:Math.random(),y:Math.random(),
+  s:.4+Math.random()*1.2,
+  v:.005+Math.random()*.012
+}));
 
-    const z=L*(
-      Math.cos(angle)*t+
-      .20*open*Math.sin(Math.PI*t)-
-      .23*open*t*t*t
-    )+layer*5;
-
-    const width=(35-layer*4)*
-      Math.pow(
-        Math.max(0,Math.sin(Math.PI*t)),.72
-      )*(.36+.64*open);
-
-    return project(
-      Math.cos(a)*r-Math.sin(a)*u*width,
-      Math.sin(a)*r+Math.cos(a)*u*width,
-      z-u*u*8*Math.sin(Math.PI*t)
-    );
-  }
-
-  const glowSprites=[
-    '255,176,215',
-    '237,126,204',
-    '177,161,255',
-    '255,229,165',
-    '127,218,193'
-  ].map(rgb=>{
-    const sprite=document.createElement('canvas');
-    sprite.width=sprite.height=32;
-    const s=sprite.getContext('2d');
-    const gradient=s.createRadialGradient(
-      16,16,0,16,16,16
-    );
-
-    gradient.addColorStop(
-      0,'rgba(255,255,255,1)'
-    );
-    gradient.addColorStop(
-      .13,'rgba('+rgb+',.95)'
-    );
-    gradient.addColorStop(
-      .36,'rgba('+rgb+',.32)'
-    );
-    gradient.addColorStop(
-      1,'rgba('+rgb+',0)'
-    );
-
-    s.fillStyle=gradient;
-    s.fillRect(0,0,32,32);
-    return sprite;
+function deadline(promise,ms,message,onLate){
+  let timer,expired=false;
+  const timeout=new Promise((_,reject)=>{
+    timer=setTimeout(()=>{
+      expired=true;
+      reject(new Error(message));
+    },ms);
   });
+  promise.then(value=>{
+    if(expired&&onLate)onLate(value);
+  },()=>{});
+  return Promise.race([promise,timeout])
+    .finally(()=>clearTimeout(timer));
+}
 
-  let flowerSeed=20261027;
-
-  function randomFlower(){    flowerSeed=(Math.imul(flowerSeed,1664525)+1013904223)>>>0;
-    return flowerSeed/4294967296;
-  }
-
-  const flowerDust=[];
-  for(let layer=0;layer<4;layer++){
-    const count=11-layer*2;
-    for(let n=0;n<count;n++){
-      for(let k=0;k<78;k++){
-        flowerDust.push({
-          layer,
-          a:n/count*Math.PI*2+layer*.53,
-          t:randomFlower(),
-          u:randomFlower()*2-1,
-          s:.55+randomFlower()*.8,
-          phase:randomFlower()*Math.PI*2
-        });
+async function waitVideo(){
+  await deadline(
+    video.play(),12000,
+    '摄像头没有开始播放，请重试'
+  );
+  await deadline(new Promise(resolve=>{
+    function check(){
+      if(video.readyState>=2&&video.videoWidth>0&&video.videoHeight>0){
+        resolve();return;
       }
+      if(!video.srcObject){resolve();return;}
+      setTimeout(check,100);
     }
-  }
+    check();
+  }),8000,'摄像头没有提供有效画面，请重新开启');
+      }async function createEngine(signal){
+  status('摄像头已开启 · 正在下载手部识别模型…');
+  const abort=new AbortController();
+  const cancel=()=>abort.abort();
+  signal.addEventListener('abort',cancel,{once:true});
+  if(signal.aborted)abort.abort();
 
-  function sparkle(x,y,size,color,alpha=1){
-    g.globalAlpha=alpha;
-    g.drawImage(
-      glowSprites[color],
-      x-size,y-size,size*2,size*2
+  const timer=setTimeout(()=>abort.abort(),35000);
+  let bytes;
+
+  try{
+    const response=await fetch(
+      'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+      {signal:abort.signal}
     );
+    if(!response.ok){
+      throw new Error('模型下载失败，HTTP '+response.status);
+    }
+    bytes=new Uint8Array(await response.arrayBuffer());
+    if(bytes.length<1000000){
+      throw new Error('模型下载不完整，请重试');
+    }
+  }finally{
+    clearTimeout(timer);
+    signal.removeEventListener('abort',cancel);
   }
 
-  function drawFlower(time){
-    const size=Math.min(W*.0028,H*.00165,1.5);
-    g.save();
-    g.translate(W*.5,H*.45+20);
-    g.scale(size,size);
-    g.globalCompositeOperation='lighter';
-    const t=time*.001;
+  const roots=[
+    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',
+    'https://unpkg.com/@mediapipe/tasks-vision@0.10.14'
+  ];
+  let lastError;
 
-    for(let i=0;i<140;i++){
-      const f=i/139;
-      sparkle(
-        5*Math.sin(f*3),f*205+8,
-        1.4,4,.3+Math.sin(i+t)*.12
-      );
-    }
-
-    for(const side of [-1,1]){
-      for(let i=0;i<110;i++){
-        const f=i/109;
-        const w=Math.sin(f*Math.PI)*10;
-        const j=Math.sin(i*13.1);
-        sparkle(
-          4+side*f*66,
-          118+(side>0?38:0)-f*40+j*w,
-          1.45,4,.45
-        );
-      }
-    }
-
-    for(const p of flowerDust){
-      const opening=clamp(
-        (bloom-p.layer*.055)/(1-p.layer*.055)
-      );
-      const a=p.a+Math.sin(t*.2)*.035;
-      const q=petal(a,p.t,p.u,p.layer,opening);
-      const float=clamp((bloom-.82)/.18)*
-        Math.max(0,p.t-.65)*9;
-      const dx=Math.cos(p.phase+t*.65)*float;
-      const dy=Math.sin(p.phase+t*.4)*float;
-      const twinkle=.58+.30*Math.sin(p.phase+t*1.5);
-      sparkle(
-        q.x+dx,q.y+dy,p.s*2.2,
-        p.layer===3?0:p.layer,twinkle
-      );
-    }
-
-    if(bloom>.35){
-      for(let i=0;i<85;i++){
-        const a=i*2.39996;
-        const r=Math.sqrt(i/85)*15;
-        const q=project(Math.cos(a)*r,Math.sin(a)*r,14);
-        sparkle(
-          q.x,q.y,1.8,3,
-          clamp((bloom-.35)*2)*(.65+.2*Math.sin(i+t))
-        );
-      }
-    }
-    g.restore();
-    g.globalAlpha=1;
-  }
-
-  function deadline(promise,ms,message,onLate){
-    let timer,expired=false;
-    const timeout=new Promise((_,reject)=>{
-      timer=setTimeout(()=>{
-        expired=true;
-        reject(new Error(message));
-      },ms);
-    });
-    promise.then(value=>{
-      if(expired&&onLate)onLate(value);
-    },()=>{});
-    return Promise.race([promise,timeout])
-      .finally(()=>clearTimeout(timer));
-  }
-
-  async function waitVideo(){
-    await deadline(
-      video.play(),12000,
-      '摄像头没有开始播放，请重试'
-    );
-    await deadline(new Promise(resolve=>{
-      function check(){
-        if(
-          video.readyState>=2&&
-          video.videoWidth>0&&video.videoHeight>0
-        ){
-          resolve();
-          return;
-        }
-        if(!video.srcObject){
-          resolve();
-          return;
-        }
-        setTimeout(check,100);
-      }
-      check();
-    }),8000,'摄像头没有提供有效画面，请重新开启');
-        }  async function createEngine(signal){
-    status('摄像头已开启 · 正在下载手部识别模型…');
-    const abort=new AbortController();
-    const cancel=()=>abort.abort();
-
-    signal.addEventListener('abort',cancel,{once:true});
-    if(signal.aborted)abort.abort();
-
-    const timer=setTimeout(()=>abort.abort(),35000);
-    let bytes;
+  for(let i=0;i<roots.length;i++){
+    if(signal.aborted)throw new Error('启动已取消');
 
     try{
-      const response=await fetch(
-        'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
-        {signal:abort.signal}
+      status(
+        i?'正在尝试备用识别库地址…':
+        '模型已下载 · 正在加载识别引擎…'
       );
-      if(!response.ok){
-        throw new Error('模型下载失败，HTTP '+response.status);
-      }
-      bytes=new Uint8Array(await response.arrayBuffer());
-      if(bytes.length<1000000){
-        throw new Error('模型下载不完整，请重试');
-      }
-    }finally{
-      clearTimeout(timer);
-      signal.removeEventListener('abort',cancel);
-    }
 
-    const roots=[
-      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',
-      'https://unpkg.com/@mediapipe/tasks-vision@0.10.14'
-    ];
-    let lastError;
+      const module=await deadline(
+        import(roots[i]+'/vision_bundle.mjs'),
+        18000,'识别库下载超时'
+      );
 
-    for(let i=0;i<roots.length;i++){
       if(signal.aborted)throw new Error('启动已取消');
-      try{
-        status(
-          i?'正在尝试备用识别库地址…':
-          '模型已下载 · 正在加载识别引擎…'
-        );
-        const module=await deadline(
-          import(roots[i]+'/vision_bundle.mjs'),
-          18000,'识别库下载超时'
-        );
-        if(signal.aborted)throw new Error('启动已取消');
 
-        const files=await module.FilesetResolver
-          .forVisionTasks(roots[i]+'/wasm');
+      const files=await module.FilesetResolver
+        .forVisionTasks(roots[i]+'/wasm');
 
-        const result=await deadline(
-          module.HandLandmarker.createFromOptions(files,{
-            baseOptions:{
-              modelAssetBuffer:bytes,
-              delegate:'CPU'
-            },
-            runningMode:'VIDEO',
-            numHands:1,
-            minHandDetectionConfidence:.35,
-            minHandPresenceConfidence:.35,
-            minTrackingConfidence:.35
-          }),
-          30000,'识别引擎启动超时',
-          value=>value.close()
-        );
+      const result=await deadline(
+        module.HandLandmarker.createFromOptions(files,{
+          baseOptions:{
+            modelAssetBuffer:bytes,
+            delegate:'CPU'
+          },
+          runningMode:'VIDEO',
+          numHands:1,
+          minHandDetectionConfidence:.35,
+          minHandPresenceConfidence:.35,
+          minTrackingConfidence:.35
+        }),
+        30000,'识别引擎启动超时',
+        value=>value.close()
+      );
 
-        if(signal.aborted){
-          result.close();
-          throw new Error('启动已取消');
-        }
-        return result;
-      }catch(error){
-        lastError=error;
+      if(signal.aborted){
+        result.close();
+        throw new Error('启动已取消');
       }
+      return result;
+    }catch(error){
+      lastError=error;
     }
-    throw lastError||new Error('识别引擎启动失败');
   }
+  throw lastError||new Error('识别引擎启动失败');
+}
 
-  function stopCamera(message){
-    epoch++;
-    if(controller)controller.abort();
-    controller=null;
-    if(stream){
-      stream.getTracks().forEach(track=>track.stop());
+function stopCamera(message){
+  document.body.classList.remove('palm-stage');
+  palmMotion.reference=null;
+  palmMotion.target=[0,0,0,1];
+  palmMotion.session=null;
+  palmMotion.entered=false;
+
+  epoch++;
+  if(controller)controller.abort();
+  controller=null;
+  if(stream)stream.getTracks().forEach(track=>track.stop());
+
+  stream=null;
+  active=false;
+  starting=false;
+  calibration=null;
+  points=null;
+  video.pause();
+  video.srcObject=null;
+  lastVideo=-1;
+
+  $('preview').hidden=true;
+  $('calibration').hidden=true;
+  $('camera').textContent='开启摄像头';
+  $('flip').disabled=false;
+  $('amount').value=Math.round(manual*100);
+  target=manual;
+
+  bg.clearRect(0,0,overlay.width,overlay.height);
+  noticeUntil=0;
+  status(message||'手动预览 · 拖动滑杆控制粒子花');
+}
+
+async function startCamera(){
+  const id=++epoch;
+  const abort=new AbortController();
+  controller=abort;
+  starting=true;
+  noticeUntil=0;
+
+  $('camera').textContent='取消启动';
+  $('flip').disabled=true;
+  status('正在申请摄像头权限，请点“允许”…');
+
+  try{
+    if(!globalThis.isSecureContext){
+      throw new Error('摄像头需要 HTTPS 网址');
     }
-    stream=null;
-    active=false;
-    starting=false;
-    calibration=null;
-    points=null;
-    video.pause();
-    video.srcObject=null;
-    lastVideo=-1;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      throw new Error('当前浏览器无法调用摄像头，请更新浏览器');
+    }
+    if(!globalThis.WebAssembly){
+      throw new Error('当前浏览器缺少识别引擎支持，请更新浏览器');
+    }
 
-    $('preview').hidden=true;
-    $('calibration').hidden=true;
-    $('camera').textContent='开启摄像头';
-    $('flip').disabled=false;
-    $('amount').value=Math.round(manual*100);
-    target=manual;
+    const acquired=await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:{ideal:front?'user':'environment'},
+        width:{ideal:640},
+        height:{ideal:480}
+      },
+      audio:false
+    });
 
-    bg.clearRect(0,0,overlay.width,overlay.height);
-    noticeUntil=0;
-    status(message||'手动预览 · 拖动滑杆控制粒子花');
-  }
+    if(id!==epoch){
+      acquired.getTracks().forEach(track=>track.stop());
+      return;
+    }
 
-  async function startCamera(){
-    const id=++epoch;
-    const abort=new AbortController();
-    controller=abort;
-    starting=true;
-    noticeUntil=0;
+    stream=acquired;
+    video.srcObject=stream;
+    $('preview').hidden=false;
+    video.style.transform=
+      overlay.style.transform=
+      front?'scaleX(-1)':'none';
 
-    $('camera').textContent='取消启动';
-    $('flip').disabled=true;
-    status('正在申请摄像头权限，请点“允许”…');
+    await waitVideo();
+    if(id!==epoch)return;
 
-    try{
-      if(!globalThis.isSecureContext){
-        throw new Error('摄像头需要 HTTPS 网址');
-      }
-      if(
-        !navigator.mediaDevices||
-        !navigator.mediaDevices.getUserMedia
-      ){
-        throw new Error('当前浏览器无法调用摄像头，请更新浏览器');
-      }
-      if(!globalThis.WebAssembly){
-        throw new Error('当前浏览器缺少识别引擎支持，请更新浏览器');
-      }
-
-      const acquired=await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:{ideal:front?'user':'environment'},
-          width:{ideal:640},
-          height:{ideal:480}
-        },
-        audio:false
-      });
-
+    if(!engine){
+      const created=await createEngine(abort.signal);
       if(id!==epoch){
-        acquired.getTracks().forEach(track=>track.stop());
+        created.close();
         return;
       }
-
-      stream=acquired;
-      video.srcObject=stream;
-      $('preview').hidden=false;
-      video.style.transform=
-        overlay.style.transform=
-        front?'scaleX(-1)':'none';
-
-      await waitVideo();
-      if(id!==epoch)return;
-
-      if(!engine){
-        const created=await createEngine(abort.signal);
-        if(id!==epoch){
-          created.close();
-          return;
-        }
-        engine=created;
-      }
-      if(id!==epoch)return;
-
-      active=true;
-      starting=false;
-      lastSeen=performance.now();
-      lastInfer=0;
-      lastVideo=-1;
-      frames=0;
-      hits=0;
-
-      $('camera').textContent='关闭摄像头';
-      $('flip').disabled=false;
-      $('calibration').hidden=false;
-      $('diagnostic').textContent='V5 · 正在等待视频帧';
-
-      status(
-        '先张掌，完整放入预览画面；看到绿色骨骼线后再慢慢握拳。',
-        2200
-      );
-    }catch(error){
-      if(id!==epoch)return;
-      let message=error.message;
-      if(error.name==='NotAllowedError'){
-        message='摄像头权限未获允许，请检查浏览器和系统的相机权限';
-      }
-      if(error.name==='NotFoundError'){
-        message='没有找到可用摄像头';
-      }
-      if(error.name==='NotReadableError'){
-        message='摄像头可能被其他应用占用，请关闭其他应用后重试';
-      }
-      if(error.name==='AbortError'){
-        message='模型下载已中断或超时，请检查网络后重试';
-      }
-      stopCamera(
-        '启动失败：'+message+'。仍可使用手动滑杆。'
-      );
-      $('diagnostic').textContent='V5 · 摄像头识别未启动';
-    }finally{
-      if(id===epoch){
-        starting=false;
-        $('flip').disabled=false;
-      }
+      engine=created;
     }
-    }  $('camera').onclick=()=>{
-    if(active||starting){
-      stopCamera('摄像头已关闭 · 可以使用手动滑杆');
-    }else{
-      startCamera();
-    }
-  };
+    if(id!==epoch)return;
 
-  $('flip').onclick=()=>{
-    if(starting)return;
-    front=!front;
-    $('flip').textContent=front?'切换后置':'切换前置';
-    if(active){
-      stopCamera();
-      startCamera();
-    }
-  };
+    active=true;
+    starting=false;
+    lastSeen=performance.now();
+    lastInfer=0;
+    lastVideo=-1;
+    frames=0;
+    hits=0;
 
-  $('amount').oninput=event=>{
-    manual=Number(event.target.value)/100;
-    if(!active)target=manual;
-  };
+    $('camera').textContent='关闭摄像头';
+    $('flip').disabled=false;
+    $('calibration').hidden=false;
+    $('diagnostic').textContent='V7 · 正在等待视频帧';
 
-  function openness(p){
-    const d=(a,b)=>Math.hypot(
-      p[a].x-p[b].x,
-      p[a].y-p[b].y,
-      p[a].z-p[b].z
+    status(
+      '先张掌，完整放入预览画面；看到绿色骨骼线后再慢慢握拳。',
+      2200
     );
-    return [5,9,13,17].reduce((sum,i)=>
-      sum+d(i,i+3)/Math.max(
-        1e-6,
-        d(i,i+1)+d(i+1,i+2)+d(i+2,i+3)
-      ),0
-    )/4;
+  }catch(error){
+    if(id!==epoch)return;
+    let message=error.message;
+
+    if(error.name==='NotAllowedError'){
+      message='摄像头权限未获允许，请检查浏览器和系统的相机权限';
+    }
+    if(error.name==='NotFoundError'){
+      message='没有找到可用摄像头';
+    }
+    if(error.name==='NotReadableError'){
+      message='摄像头可能被其他应用占用，请关闭其他应用后重试';
+    }
+    if(error.name==='AbortError'){
+      message='模型下载已中断或超时，请检查网络后重试';
+    }
+
+    stopCamera('启动失败：'+message+'。仍可使用手动滑杆。');
+    $('diagnostic').textContent='V7 · 摄像头识别未启动';
+  }finally{
+    if(id===epoch){
+      starting=false;
+      $('flip').disabled=false;
+    }
+  }
+            }$('camera').onclick=()=>{
+  if(active||starting){
+    stopCamera('摄像头已关闭 · 可以使用手动滑杆');
+  }else{
+    startCamera();
+  }
+};
+
+$('flip').onclick=()=>{
+  if(starting)return;
+  front=!front;
+  $('flip').textContent=front?'切换后置':'切换前置';
+  if(active){
+    stopCamera();
+    startCamera();
+  }
+};
+
+$('amount').oninput=event=>{
+  manual=Number(event.target.value)/100;
+  if(!active)target=manual;
+};
+
+function openness(p){
+  const d=(a,b)=>Math.hypot(
+    p[a].x-p[b].x,
+    p[a].y-p[b].y,
+    p[a].z-p[b].z
+  );
+  return [5,9,13,17].reduce((sum,i)=>
+    sum+d(i,i+3)/Math.max(
+      1e-6,
+      d(i,i+1)+d(i+1,i+2)+d(i+2,i+3)
+    ),0
+  )/4;
+}
+
+function beginCalibration(kind){
+  if(!active){
+    status('请先开启摄像头。',2500);
+    return;
+  }
+  noticeUntil=0;
+  calibration={
+    kind,start:performance.now(),values:[]
+  };
+}
+
+$('opened').onclick=()=>beginCalibration('open');
+$('closed').onclick=()=>beginCalibration('closed');
+
+function updateCalibration(time,value){
+  if(!calibration)return;
+  if(value!==null)calibration.values.push(value);
+
+  const remaining=1.6-(time-calibration.start)/1000;
+  if(remaining>0){
+    status(
+      (calibration.kind==='open'?'保持张掌':'保持握拳')+
+      ' · 采集中 '+remaining.toFixed(1)+' 秒'
+    );
+    return;
   }
 
-  function beginCalibration(kind){
-    if(!active){
-      status('请先开启摄像头。',2500);
-      return;
+  const sample=calibration;
+  calibration=null;
+
+  if(sample.values.length<4){
+    status(
+      '有效手部画面不足，请先张掌，让绿色骨骼线出现。',
+      4000
+    );
+    return;
+  }
+
+  sample.values.sort((a,b)=>a-b);
+  const valueMedian=sample.values[
+    Math.floor(sample.values.length/2)
+  ];
+
+  if(sample.kind==='open'&&valueMedian>closed+.12){
+    opened=valueMedian;
+    status('张掌校准完成。',2500);
+  }else if(sample.kind==='closed'&&valueMedian<opened-.12){
+    closed=valueMedian;
+    status('握拳校准完成。',2500);
+  }else{
+    status(
+      '本次开合幅度不足，保留原参数；可以直接尝试开合。',
+      3500
+    );
+  }
+}
+
+function drawBones(){
+  bg.clearRect(0,0,overlay.width,overlay.height);
+  if(!points)return;
+
+  const paths=[
+    [0,1,2,3,4],[0,5,6,7,8],
+    [5,9,10,11,12],[9,13,14,15,16],
+    [13,17,18,19,20],[0,17]
+  ];
+
+  bg.strokeStyle='#b1f3c8';
+  bg.lineWidth=2;
+
+  for(const path of paths){
+    bg.beginPath();
+    path.forEach((index,k)=>{
+      const p=points[index];
+      if(k){
+        bg.lineTo(p.x*overlay.width,p.y*overlay.height);
+      }else{
+        bg.moveTo(p.x*overlay.width,p.y*overlay.height);
+      }
+    });
+    bg.stroke();
+  }
+
+  bg.fillStyle='#fff';
+  for(const p of points){
+    bg.beginPath();
+    bg.arc(
+      p.x*overlay.width,p.y*overlay.height,
+      2.5,0,Math.PI*2
+    );
+    bg.fill();
+  }
+}
+
+function track(time){
+  if(palmMotion.session!==stream){
+    palmMotion.session=stream;
+    palmMotion.reference=null;
+    palmMotion.target=[0,0,0,1];
+    palmMotion.entered=false;
+  }
+
+  let value=null;
+
+  if(
+    video.readyState>=2&&video.videoWidth&&
+    video.currentTime!==lastVideo&&
+    time-lastInfer>80
+  ){
+    lastInfer=time;
+    lastVideo=video.currentTime;
+
+    const height=Math.max(
+      1,
+      Math.round(384*video.videoHeight/video.videoWidth)
+    );
+
+    if(input.width!==384||input.height!==height){
+      input.width=384;
+      input.height=height;
+      overlay.width=320;
+      overlay.height=Math.round(
+        320*video.videoHeight/video.videoWidth
+      );
     }
-    noticeUntil=0;
-    calibration={
-      kind,
-      start:performance.now(),
-      values:[]
+
+    $('preview').style.aspectRatio=
+      video.videoWidth+'/'+video.videoHeight;
+
+    inputCtx.drawImage(video,0,0,input.width,input.height);
+
+    const result=engine.detectForVideo(input,time);
+    frames++;
+    palmRead(result);
+
+    const found=result.landmarks&&result.landmarks[0];
+
+    if(found){
+      points=found;
+      lastSeen=time;
+      hits++;
+      raw=openness(
+        result.worldLandmarks&&result.worldLandmarks[0]||found
+      );
+      value=raw;
+      target=clamp((raw-closed)/Math.max(.12,opened-closed));
+
+      if(!calibration){
+        status(
+          '已识别手部 · '+
+          (target<.15?'握拳 / 花苞':
+            target>.85?'张掌 / 盛放':'粒子花正在绽放')
+        );
+      }
+    }else{
+      if(time-lastSeen>450)points=null;
+      if(time-lastSeen>1200){
+        target=.06;
+        if(!calibration){
+          status('未检测到手 · 请张掌并完整放入预览框，也可尝试切换镜头');
+        }
+      }
+    }
+
+    $('diagnostic').textContent=
+      'V7 · 已处理 '+frames+' 帧 · 检出手 '+hits+' 次';
+
+    drawBones();
+  }
+
+  if(time-lastInfer>4500&&!calibration){
+    status('摄像头画面没有更新，请关闭后重新开启。');
+  }
+
+  updateCalibration(time,value);
+}
+
+function frame(time){
+  const dt=Math.min(
+    .05,Math.max(0,(time-previous)/1000)
+  );
+  previous=time;
+
+  if(active){
+    try{
+      track(time);
+    }catch(error){
+      stopCamera(
+        '识别中断：'+error.message+
+        '。请重新开启，或使用手动滑杆。'
+      );
+    }
+  }
+
+  bloom+=(target-bloom)*(1-Math.exp(-dt*8));
+  $('percent').textContent=Math.round(bloom*100)+'%';
+  if(active)$('amount').value=Math.round(bloom*100);
+
+  if(time-lastPaint>32){
+    lastPaint=time;
+    g.clearRect(0,0,W,H);
+
+    for(const p of particles){
+      p.y-=p.v*dt*(.3+bloom);
+      if(p.y<0)p.y=1;
+      g.globalAlpha=.18+bloom*.3;
+      g.fillStyle='#dcc4ff';
+      g.beginPath();
+      g.arc(
+        p.x*W+Math.sin(time*.0004+p.x*9)*12,
+        p.y*H,p.s,0,Math.PI*2
+      );
+      g.fill();
+    }
+
+    g.globalAlpha=1;
+    drawFlower(time);
+  }
+
+  requestAnimationFrame(frame);
+}
+
+addEventListener('pagehide',()=>stopCamera());
+addEventListener('pageshow',()=>{
+  if(active)video.play().catch(()=>{});
+});
+requestAnimationFrame(frame);
+
+$('reset').onclick=()=>{
+  palmMotion.reference=null;
+  palmMotion.target=[0,0,0,1];
+  status('下一次识别到的手掌姿态将作为正向。',2500);
+};
+
+let palmTap=null;
+
+canvas.addEventListener('pointerdown',e=>{
+  palmTap={
+    x:e.clientX,y:e.clientY,time:performance.now()
+  };
+});
+
+canvas.addEventListener('pointerup',e=>{
+  if(
+    palmTap&&active&&
+    performance.now()-palmTap.time<400&&
+    Math.hypot(e.clientX-palmTap.x,e.clientY-palmTap.y)<8
+  ){
+    document.body.classList.toggle('palm-stage');
+  }
+  palmTap=null;
+});
+
+canvas.addEventListener('pointercancel',()=>{
+  palmTap=null;
+});function drawFlower(time){
+  let s=drawFlower.space;
+
+  if(!s){
+    const rgb=[
+      '217,245,255',
+      '105,220,255',
+      '165,153,255',
+      '255,226,175'
+    ];
+
+    const sprites=rgb.map(color=>{
+      const c=document.createElement('canvas');
+      c.width=c.height=32;
+      const q=c.getContext('2d');
+      const a=q.createRadialGradient(16,16,0,16,16,16);
+
+      a.addColorStop(0,'rgba(255,255,255,1)');
+      a.addColorStop(.12,'rgba('+color+',.92)');
+      a.addColorStop(.38,'rgba('+color+',.20)');
+      a.addColorStop(1,'rgba('+color+',0)');
+
+      q.fillStyle=a;
+      q.fillRect(0,0,32,32);
+      return c;
+    });
+
+    s=drawFlower.space={
+      sprites,dust:[],stars:[],
+      yaw:0,pitch:.43,zoom:1,
+      drag:null,last:0,auto:0,clock:time
+    };
+
+    let seed=192;
+    const rand=()=>{
+      seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+      return seed/4294967296;
+    };
+
+    for(let layer=0;layer<4;layer++){
+      const count=10-layer*2;
+
+      for(let n=0;n<count;n++){
+        const a=n/count*Math.PI*2+layer*.43;
+
+        const add=(t,u,edge)=>s.dust.push({
+          layer,a,t,u,edge,
+          phase:rand()*6.28,
+          size:edge?.85:.75+rand()*.65
+        });
+
+        for(let i=0;i<56;i++){
+          add(rand(),rand()*2-1,false);
+        }
+        for(let i=0;i<22;i++){
+          add((i+.3)/22,-1,true);
+          add((i+.3)/22,1,true);
+        }
+        for(let i=0;i<14;i++){
+          add((i+.5)/14,0,true);
+        }
+      }
+    }
+
+    for(let i=0;i<110;i++){
+      s.stars.push({
+        x:(rand()-.5)*560,
+        y:(rand()-.5)*440,
+        z:(rand()-.5)*560,
+        p:rand()*6.28
+      });
+    }
+
+    canvas.style.pointerEvents='auto';
+    canvas.style.touchAction='none';
+
+    canvas.addEventListener('pointerdown',e=>{
+      if(active)return;
+      s.drag={x:e.clientX,y:e.clientY};
+      s.last=performance.now();
+      if(canvas.setPointerCapture){
+        canvas.setPointerCapture(e.pointerId);
+      }
+    });
+
+    canvas.addEventListener('pointermove',e=>{
+      if(active||!s.drag)return;
+
+      s.yaw+=(e.clientX-s.drag.x)*.007;
+      s.pitch=clamp(
+        s.pitch+(e.clientY-s.drag.y)*.005,
+        -.2,1.15
+      );
+      s.drag={x:e.clientX,y:e.clientY};
+      s.last=performance.now();
+    });
+
+    const release=()=>{
+      s.drag=null;
+      s.last=performance.now();
+    };
+
+    canvas.addEventListener('pointerup',release);
+    canvas.addEventListener('pointercancel',release);
+
+    canvas.addEventListener('dblclick',()=>{
+      s.yaw=0;
+      s.pitch=.43;
+      s.zoom=1;
+      s.auto=0;
+    });
+
+    canvas.addEventListener('wheel',e=>{
+      e.preventDefault();
+      s.zoom=clamp(s.zoom-e.deltaY*.001,.7,1.5);
+    },{passive:false});
+  }  const t=time*.001;
+  const scale=Math.min(W/440,H/650,1.55)*s.zoom;
+  const delta=clamp((time-s.clock)/1000,0,.05);
+  s.clock=time;
+
+  if(!active&&!s.drag&&time-s.last>1800){
+    s.auto+=delta*.13;
+  }
+
+  palmMotion.q=palmSlerp(
+    palmMotion.q,palmMotion.target,
+    1-Math.exp(-delta*12)
+  );
+
+  const stage=document.body.classList.contains('palm-stage');
+  const centerY=stage?H*.5:H*.43;
+  const angle=s.yaw+s.auto;
+
+  const ca=Math.cos(angle);
+  const sa=Math.sin(angle);
+  const cp=Math.cos(s.pitch);
+  const sp=Math.sin(s.pitch);
+  const list=[];
+
+  function project3(x,y,z){
+    const X=x*ca+z*sa;
+    const Z=-x*sa+z*ca;
+    const Y=y-25;
+    const yy=Y*cp-Z*sp;
+    const zz=Y*sp+Z*cp;
+    const k=720/(720-zz);
+
+    return {
+      x:W*.5+X*k*scale,
+      y:centerY-yy*k*scale,
+      d:zz,k
     };
   }
 
-  $('opened').onclick=()=>beginCalibration('open');
-  $('closed').onclick=()=>beginCalibration('closed');
-
-  function updateCalibration(time,value){
-    if(!calibration)return;
-    if(value!==null)calibration.values.push(value);
-
-    const remaining=1.6-(time-calibration.start)/1000;
-    if(remaining>0){
-      status(
-        (calibration.kind==='open'?'保持张掌':'保持握拳')+
-        ' · 采集中 '+remaining.toFixed(1)+' 秒'
-      );
-      return;
+  function add(x,y,z,color,size,alpha,follow=true){
+    if(follow){
+      const v=palmRotate(palmMotion.q,[x,y-25,z]);
+      x=v[0];y=v[1]+25;z=v[2];
     }
 
-    const sample=calibration;
-    calibration=null;
-    if(sample.values.length<4){
-      status(
-        '有效手部画面不足，请先张掌，让绿色骨骼线出现。',
-        4000
-      );
-      return;
-    }
+    const p=project3(x,y,z);
+    const fog=clamp((p.d+440)/800,.18,1);
 
-    sample.values.sort((a,b)=>a-b);
-    const valueMedian=sample.values[
-      Math.floor(sample.values.length/2)
-    ];
-
-    if(sample.kind==='open'&&valueMedian>closed+.12){
-      opened=valueMedian;
-      status('张掌校准完成。',2500);
-    }else if(
-      sample.kind==='closed'&&valueMedian<opened-.12
-    ){
-      closed=valueMedian;
-      status('握拳校准完成。',2500);
-    }else{
-      status(
-        '本次开合幅度不足，保留原参数；可以直接尝试开合。',
-        3500
-      );
-    }
+    list.push({
+      x:p.x,y:p.y,d:p.d,
+      size:Math.max(.7,size*p.k*scale),
+      color,alpha:alpha*fog
+    });
   }
 
-  function drawBones(){
-    bg.clearRect(0,0,overlay.width,overlay.height);
-    if(!points)return;
-
-    const paths=[
-      [0,1,2,3,4],[0,5,6,7,8],
-      [5,9,10,11,12],[9,13,14,15,16],
-      [13,17,18,19,20],[0,17]
-    ];
-
-    bg.strokeStyle='#b1f3c8';
-    bg.lineWidth=2;
-
-    for(const path of paths){
-      bg.beginPath();
-      path.forEach((index,k)=>{
-        const p=points[index];
-        if(k){
-          bg.lineTo(
-            p.x*overlay.width,p.y*overlay.height
-          );
-        }else{
-          bg.moveTo(
-            p.x*overlay.width,p.y*overlay.height
-          );
-        }
-      });
-      bg.stroke();
-    }
-
-    bg.fillStyle='#fff';
-    for(const p of points){
-      bg.beginPath();
-      bg.arc(
-        p.x*overlay.width,p.y*overlay.height,
-        2.5,0,Math.PI*2
-      );
-      bg.fill();
-    }
-  }  function track(time){
-    let value=null;
-    if(
-      video.readyState>=2&&video.videoWidth&&
-      video.currentTime!==lastVideo&&
-      time-lastInfer>80
-    ){
-      lastInfer=time;
-      lastVideo=video.currentTime;
-
-      const height=Math.max(
-        1,
-        Math.round(
-          384*video.videoHeight/video.videoWidth
-        )
-      );
-
-      if(input.width!==384||input.height!==height){
-        input.width=384;
-        input.height=height;
-        overlay.width=320;
-        overlay.height=Math.round(
-          320*video.videoHeight/video.videoWidth
-        );
-      }
-
-      $('preview').style.aspectRatio=
-        video.videoWidth+'/'+video.videoHeight;
-
-      inputCtx.drawImage(
-        video,0,0,input.width,input.height
-      );
-
-      const result=engine.detectForVideo(input,time);
-      frames++;
-
-      const found=result.landmarks&&result.landmarks[0];
-
-      if(found){
-        points=found;
-        lastSeen=time;
-        hits++;
-        raw=openness(
-          result.worldLandmarks&&result.worldLandmarks[0]||
-          found
-        );
-        value=raw;
-        target=clamp(
-          (raw-closed)/Math.max(.12,opened-closed)
-        );
-
-        if(!calibration){
-          status(
-            '已识别手部 · '+
-            (target<.15?'握拳 / 花苞':
-              target>.85?'张掌 / 盛放':
-              '粒子花正在绽放')
-          );
-        }
-      }else{
-        if(time-lastSeen>450)points=null;
-        if(time-lastSeen>1200){
-          target=.06;
-          if(!calibration){
-            status(
-              '未检测到手 · 请张掌并完整放入预览框，也可尝试切换镜头'
-            );
-          }
-        }
-      }
-
-      $('diagnostic').textContent=
-        'V5 · 已处理 '+frames+
-        ' 帧 · 检出手 '+hits+' 次';
-
-      drawBones();
-    }
-
-    if(time-lastInfer>4500&&!calibration){
-      status('摄像头画面没有更新，请关闭后重新开启。');
-    }
-
-    updateCalibration(time,value);
-  }
-
-  function frame(time){
-    const dt=Math.min(
-      .05,Math.max(0,(time-previous)/1000)
+  for(const p of s.stars){
+    add(
+      p.x,p.y,p.z,1,.9,
+      .10+.05*Math.sin(t*.5+p.p),false
     );
-    previous=time;
-
-    if(active){
-      try{
-        track(time);
-      }catch(error){
-        stopCamera(
-          '识别中断：'+error.message+
-          '。请重新开启，或使用手动滑杆。'
-        );
-      }
-    }
-
-    bloom+=(target-bloom)*(1-Math.exp(-dt*8));
-    $('percent').textContent=
-      Math.round(bloom*100)+'%';
-
-    if(active){
-      $('amount').value=Math.round(bloom*100);
-    }
-
-    if(time-lastPaint>32){
-      lastPaint=time;
-      g.clearRect(0,0,W,H);
-
-      for(const p of particles){
-        p.y-=p.v*dt*(.3+bloom);
-        if(p.y<0)p.y=1;
-        g.globalAlpha=.18+bloom*.3;
-        g.fillStyle='#dcc4ff';
-        g.beginPath();
-        g.arc(
-          p.x*W+Math.sin(time*.0004+p.x*9)*12,
-          p.y*H,p.s,0,Math.PI*2
-        );
-        g.fill();
-      }
-
-      g.globalAlpha=1;
-      drawFlower(time);
-    }
-
-    requestAnimationFrame(frame);
   }
 
-  addEventListener('pagehide',()=>stopCamera());
-  addEventListener('pageshow',()=>{
-    if(active)video.play().catch(()=>{});
-  });
+  for(const p of s.dust){
+    const o=clamp(
+      (bloom-p.layer*.045)/(1-p.layer*.045)
+    );
+    const L=139-p.layer*19;
+    const bend=.09+o*(1.12-p.layer*.12);
+    const a=p.a+o*.08*Math.sin(p.t*3.14);
 
-  requestAnimationFrame(frame);
+    const r=5+
+      L*Math.sin(bend)*p.t+
+      .13*L*o*Math.sin(Math.PI*p.t);
+
+    const width=(24-p.layer*2.5)*
+      Math.pow(Math.sin(Math.PI*p.t),.72)*
+      (.32+.68*o);
+
+    const y=38+p.layer*3+
+      L*Math.cos(bend)*p.t+
+      .10*L*o*Math.sin(Math.PI*p.t)+
+      .15*L*o*p.t*p.t*p.t-
+      p.u*p.u*9*Math.sin(Math.PI*p.t);
+
+    const drift=clamp((bloom-.86)/.14)*
+      Math.max(0,p.t-.65)*5;
+
+    const x=Math.cos(a)*r-Math.sin(a)*p.u*width;
+    const z=Math.sin(a)*r+Math.cos(a)*p.u*width;
+
+    add(
+      x+Math.sin(t*.4+p.phase)*drift,
+      y,z,
+      p.edge?0:(p.layer%2?2:1),
+      p.size*2.3,
+      (p.edge?.95:.48)+.09*Math.sin(t+p.phase)
+    );
+  }
+
+  for(let i=0;i<140;i++){
+    const f=i/139;
+    add(
+      Math.sin(f*3)*5,
+      38-f*190,
+      Math.cos(f*3)*4,
+      1,1.55,.58
+    );
+  }
+
+  for(let side=-1;side<=1;side+=2){
+    for(let i=0;i<95;i++){
+      const f=i/94;
+      const spread=Math.sin(f*Math.PI)*
+        10*Math.sin(i*2.4);
+
+      add(
+        side*f*58,
+        -65+f*37+(side>0?-26:0),
+        f*18+spread,
+        2,1.5,.55
+      );
+    }
+  }
+
+  for(let ring=0;ring<2;ring++){
+    for(let i=0;i<250;i++){
+      const a=i/250*Math.PI*2+
+        t*(ring?-.12:.09);
+      const r=ring?180:155;
+      const x=Math.cos(a)*r;
+      const z=Math.sin(a)*r;
+      const y=ring?14+Math.sin(a)*r*.24:-159;
+      const bright=i%25===0;
+
+      add(
+        x,y,z,ring?2:1,
+        bright?2.1:1.05,
+        bright?.62:.25,
+        false
+      );
+    }
+  }
+
+  const core=clamp((bloom-.3)/.7);
+
+  for(let i=0;i<120;i++){
+    const v=1-2*(i+.5)/120;
+    const a=i*2.399963+t*.15;
+    const r=13*Math.sqrt(1-v*v);
+
+    add(
+      r*Math.cos(a),
+      45+v*13,
+      r*Math.sin(a),
+      i%5?0:3,
+      1.7,core*.85
+    );
+  }
+
+  list.sort((a,b)=>a.d-b.d);
+
+  g.save();
+  g.globalCompositeOperation='lighter';
+
+  for(const p of list){
+    g.globalAlpha=p.alpha;
+    g.drawImage(
+      s.sprites[p.color],
+      p.x-p.size,p.y-p.size,
+      p.size*2,p.size*2
+    );
+  }
+
+  g.restore();
+  g.globalAlpha=1;
+}
+
 })();
 </script>
 </body>
 </html>
-  
+<!-- V7 完整结束 -->
