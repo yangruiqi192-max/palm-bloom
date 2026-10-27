@@ -342,7 +342,7 @@ turnState.time=time; if(!previous||dt<=0||dt>1){ turnState.angle=0; return; }
 let d=palmMultiply(q,[-previous[0],-previous[1],-previous[2],previous[3]]);
 if(d[3]<0)d=d.map(v=>-v); const size=Math.hypot(d[0],d[1],d[2]);
 const angle=2*Math.atan2(size,Math.max(0,d[3])); if(angle>.8||angle/Math.max(dt,.016)>12){
-turnState.angle=0; return; } if(size>1e-8)turnState.angle+=angle*d[2]/size; const full=Math.PI*/2;
+turnState.angle=0; return; } if(size>1e-8)turnState.angle+=angle*d[2]/size; const full=Math.PI/2;
 if(Math.abs(turnState.angle)>=full-1e-6){ turnState.angle-=Math.sign(turnState.angle)*full;
 randomFlowerColor(); } } function colorBankValue(bank,time){ const t=clamp((time-bank.start)/1100);
 const eased=t*t*(3-2*t); return bank.from.map((rgb,i)=> rgb.map((v,j)=>v+(bank.to[i][j]-v)*eased) );
