@@ -5,7 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050911">
 <title>掌心花开 · 手势三维 V7</title>
-<style>
+/* 摄像头适中大小，固定为 16:9 */
+#preview{
+  width:clamp(112px,32vw,145px)!important;
+  aspect-ratio:16 / 9!important;
+  height:auto!important;
+}
+
+#video,#bones{
+  object-fit:cover!important;
+}<style>
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{
@@ -1132,7 +1141,279 @@ canvas.addEventListener('pointercancel',()=>{
   g.globalAlpha=1;
 }
 
-})();
+function drawFlower(time){
+  g.clearRect(0,0,W,H);
+  let s=drawFlower.space;
+
+  if(!s){
+    const colors=[
+      '220,246,255',
+      '116,221,255',
+      '178,163,255'
+    ];
+
+    const sprites=colors.map(color=>{
+      const c=document.createElement('canvas');
+      c.width=c.height=32;
+      const q=c.getContext('2d');
+      const a=q.createRadialGradient(16,16,0,16,16,16);
+
+      a.addColorStop(0,'rgba(255,255,255,1)');
+      a.addColorStop(.16,'rgba('+color+',.95)');
+      a.addColorStop(.42,'rgba('+color+',.26)');
+      a.addColorStop(1,'rgba('+color+',0)');
+
+      q.fillStyle=a;
+      q.fillRect(0,0,32,32);
+      return c;
+    });
+
+    s=drawFlower.space={
+      sprites,dust:[],
+      yaw:0,pitch:.43,zoom:1,
+      drag:null,last:0,auto:0,clock:time
+    };
+
+    let seed=192;
+    const rand=()=>{
+      seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+      return seed/4294967296;
+    };
+
+    for(let layer=0;layer<4;layer++){
+      const count=10-layer*2;
+
+      for(let n=0;n<count;n++){
+        const a=n/count*Math.PI*2+layer*.43;
+        const add=(t,u,edge)=>s.dust.push({
+          layer,a,t,u,edge,
+          phase:rand()*6.28,
+          size:edge?.9:.85+rand()*.6
+        });
+
+        for(let i=0;i<56;i++){
+          add(rand(),rand()*2-1,false);
+        }
+        for(let i=0;i<22;i++){
+          add((i+.3)/22,-1,true);
+          add((i+.3)/22,1,true);
+        }
+        for(let i=0;i<14;i++){
+          add((i+.5)/14,0,true);
+        }
+      }
+    }
+
+    canvas.style.pointerEvents='auto';
+    canvas.style.touchAction='none';
+
+    canvas.addEventListener('pointerdown',e=>{
+      if(active)return;
+      s.drag={x:e.clientX,y:e.clientY};
+      s.last=performance.now();
+      if(canvas.setPointerCapture){
+        canvas.setPointerCapture(e.pointerId);
+      }
+    });
+
+    canvas.addEventListener('pointermove',e=>{
+      if(active||!s.drag)return;
+
+      s.yaw+=(e.clientX-s.drag.x)*.007;
+      s.pitch=clamp(
+        s.pitch+(e.clientY-s.drag.y)*.005,
+        -.2,1.15
+      );
+
+      s.drag={x:e.clientX,y:e.clientY};
+      s.last=performance.now();
+    });
+
+    const release=()=>{
+      s.drag=null;
+      s.last=performance.now();
+    };
+
+    canvas.addEventListener('pointerup',release);
+    canvas.addEventListener('pointercancel',release);
+
+    canvas.addEventListener('dblclick',()=>{
+      if(active)return;
+      s.yaw=0;
+      s.pitch=.43;
+      s.zoom=1;
+      s.auto=0;
+    });
+
+    canvas.addEventListener('wheel',e=>{
+      e.preventDefault();
+      s.zoom=clamp(s.zoom-e.deltaY*.001,.7,1.5);
+    },{passive:false});
+
+    const style=document.createElement('style');
+    style.textContent=`
+      #preview{
+        width:clamp(112px,32vw,145px)!important;
+        aspect-ratio:16/9!important;
+        height:auto!important
+      }
+      #video,#bones{
+        object-fit:cover!important
+      }
+    `;
+    document.head.appendChild(style);
+
+    document.title='掌心花开 · 厚瓣三维 V8';
+    const label=document.querySelector('header small');
+    if(label){
+      label.textContent='NEURAL BLOOM · PETALS V8';
+    }
+  }
+
+  const delta=clamp((time-s.clock)/1000,0,.05);
+  s.clock=time;
+
+  if(!active&&!s.drag&&time-s.last>1800){
+    s.auto+=delta*.13;
+  }
+
+  palmMotion.q=palmSlerp(
+    palmMotion.q,palmMotion.target,
+    1-Math.exp(-delta*12)
+  );
+
+  const stage=document.body.classList.contains('palm-stage');
+  const scale=Math.min(W/350,H/480,1.9)*s.zoom;
+  const centerY=stage?H*.5:H*.43;
+  const angle=s.yaw+s.auto;
+  const ca=Math.cos(angle);
+  const sa=Math.sin(angle);
+  const cp=Math.cos(s.pitch);
+  const sp=Math.sin(s.pitch);
+  const list=[];
+
+  function add(x,y,z,color,size,alpha){
+    const v=palmRotate(
+      palmMotion.q,[x,y-85,z]
+    );
+
+    const X=v[0]*ca+v[2]*sa;
+    const Z=-v[0]*sa+v[2]*ca;
+    const yy=v[1]*cp-Z*sp;
+    const zz=v[1]*sp+Z*cp;
+    const k=720/(720-zz);
+
+    list.push({
+      x:W*.5+X*k*scale,
+      y:centerY-yy*k*scale,
+      d:zz,
+      size:Math.max(.8,size*k*scale),
+      color,
+      alpha:alpha*clamp((zz+440)/800,.23,1)
+    });
+  }
+
+  for(const p of s.dust){
+    const o=clamp(
+      (bloom-p.layer*.045)/(1-p.layer*.045)
+    );
+
+    const L=139-p.layer*19;
+    const bend=.09+o*(1.12-p.layer*.12);
+    const a=p.a+o*.08*Math.sin(p.t*Math.PI);
+    const ca2=Math.cos(a);
+    const sa2=Math.sin(a);
+    const st=Math.max(
+      .00001,Math.sin(Math.PI*p.t)
+    );
+    const ct=Math.cos(Math.PI*p.t);
+
+    const widthBase=
+      (30-p.layer*2.4)*(.32+.68*o);
+    const width=widthBase*Math.pow(st,.72);
+
+    const r=5+
+      L*Math.sin(bend)*p.t+
+      .13*L*o*st;
+
+    const y=38+p.layer*3+
+      L*Math.cos(bend)*p.t+
+      .10*L*o*st+
+      .15*L*o*p.t*p.t*p.t-
+      p.u*p.u*9*st;
+
+    const x=ca2*r-sa2*p.u*width;
+    const z=sa2*r+ca2*p.u*width;
+
+    const rp=
+      L*Math.sin(bend)+
+      .13*L*o*Math.PI*ct;
+
+    const wp=widthBase*.72*
+      Math.pow(st,-.28)*Math.PI*ct;
+
+    const yp=
+      L*Math.cos(bend)+
+      .10*L*o*Math.PI*ct+
+      .45*L*o*p.t*p.t-
+      p.u*p.u*9*Math.PI*ct;
+
+    const ap=o*.08*Math.PI*ct;
+
+    const tangent=[
+      ca2*rp-sa2*p.u*wp-ap*z,
+      yp,
+      sa2*rp+ca2*p.u*wp+ap*x
+    ];
+
+    const across=[
+      -sa2*width,
+      -18*p.u*st,
+      ca2*width
+    ];
+
+    const normal=palmUnit(
+      palmCross(tangent,across)
+    )||[0,1,0];
+
+    const thick=
+      (2+4*st)*(.55+.45*o);
+
+    const color=p.edge?0:(p.layer%2?2:1);
+    const alpha=
+      (p.edge?.70:.43)+
+      .05*Math.sin(time*.001+p.phase);
+
+    for(const side of [-1,1]){
+      const d=side*thick;
+      add(
+        x+normal[0]*d,
+        y+normal[1]*d,
+        z+normal[2]*d,
+        color,
+        p.size*2.6,
+        alpha
+      );
+    }
+  }
+
+  list.sort((a,b)=>a.d-b.d);
+
+  g.save();
+  g.globalCompositeOperation='lighter';
+
+  for(const p of list){
+    g.globalAlpha=p.alpha;
+    g.drawImage(
+      s.sprites[p.color],
+      p.x-p.size,p.y-p.size,
+      p.size*2,p.size*2
+    );
+  }
+
+  g.restore();
+  g.globalAlpha=1;
+  }})();
 </script>
 </body>
 </html>
