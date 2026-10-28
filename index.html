@@ -15,8 +15,7 @@ width:min(490px,calc(100% - 28px)); max-height:43%;overflow:auto;padding:14px 18
 border:1px solid #82c9ea24;border-radius:18px; background:#09131ee8;backdrop-filter:blur(12px);
 box-shadow:0 20px 70px #0007 } .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap} button{
 font:inherit;font-size:12px;cursor:pointer; padding:9px 11px;
-border:1px solid #ffffff25;border-radius:10px; background:#ffffff09;color:#eee;min-height:40px }
-button:disabled{opacity:.5;cursor:wait} #camera{ background:#c8edff;color:#102336;border:0;font-weight:600 } #percent{ margin-left:auto;font-size:23px;color:#c8edff;font-variant-numeric:tabular-nums } input[type=range]{ width:100%;accent-color:#b8e8ff;
+border:1px solid #ffffff25;border-radius:10px; background:#ffffff09;color:#eee;min-height:40px }button:disabled{opacity:.5;cursor:wait} #camera{ background:#c8edff;color:#102336;border:0;font-weight:600 } #percent{ margin-left:auto;font-size:23px;color:#c8edff;font-variant-numeric:tabular-nums } input[type=range]{ width:100%;accent-color:#b8e8ff;
 margin:10px 0 2px;min-height:28px } .labels{ display:flex;justify-content:space-between;
 font-size:10px;color:#a0b4c4 } #status{ font-size:12px;line-height:1.7;
 margin-top:10px;min-height:22px } #calibration{display:flex;gap:8px;margin-top:8px}
@@ -31,8 +30,7 @@ position:fixed;top:42%;left:10%;width:80%; font-size:13px;line-height:1.8;pointe
 .palm-stage header, .palm-stage .panel, .palm-stage #boot, .palm-stage #preview span,
 .palm-stage #bones{ display:none!important } @media(max-width:600px){ .panel{padding:12px 15px}
 h1{font-size:26px} } @media(max-height:550px){ header p{display:none}
-.panel{max-height:40%;width:min(490px,78%)} } .reset-stack{display:flex;flex-direction:column;gap:6px}.reset-stack button{white-space:nowrap}</style> <script>
-window.addEventListener('error',function(e){ var node=document.getElementById('boot'); if(node){node.hidden=false; node.textContent='程序错误：'+e.message; } }); </script> </head> <body>
+.panel{max-height:40%;width:min(490px,78%)} } .reset-stack{display:flex;flex-direction:column;gap:6px}.reset-stack button{white-space:nowrap}</style> <script>window.addEventListener('error',function(e){ var node=document.getElementById('boot'); if(node){node.hidden=false; node.textContent='程序错误：'+e.message; } }); </script> </head> <body>
 <canvas id="scene" aria-label="手势控制的三维粒子花"></canvas> <header><small>NEURAL BLOOM · PETALS V9</small> <h1>掌心花开</h1> <p>张掌绽放 · 转掌跟随<br>识别后隐藏菜单，轻点空白处恢复</p>
 </header> <p id="boot">正在准备粒子花…</p> <div id="preview" hidden>
 <video id="video" autoplay muted playsinline webkit-playsinline></video>
@@ -48,8 +46,7 @@ min="0" max="100" value="65" aria-label="花朵开放程度"> <div class="labels
 <p class="note"> 首次识别需联网加载。视频在本机处理。<br> 自动下载失败时，可先
 <a href="https://raw.githubusercontent.com/cfornesa/augment-humankind/main/public/assets/vendor/mediapipe-hands/hand_landmarker.task"
 target="_blank" rel="noopener">下载模型文件</a>， 再点击“导入模型”。模型约 8 MB。 </p> </section> <script>
-(function(){ const $=id=>document.getElementById(id);
-const canvas=$('scene'),g=canvas.getContext('2d'); const video=$('video');const overlay=$('bones'),bg=overlay.getContext('2d'); const input=document.createElement('canvas');
+(function(){ const $=id=>document.getElementById(id);const canvas=$('scene'),g=canvas.getContext('2d'); const video=$('video');const overlay=$('bones'),bg=overlay.getContext('2d'); const input=document.createElement('canvas');
 const inputCtx=input.getContext('2d'); const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));let W=0,H=0,bloom=.65,target=.65,manual=.65; let engine=null,stream=null,modelBytes=null;
 let active=false,starting=false,front=true,epoch=0; let controller=null,points=null,raw=.8;
 let closed=.46,opened=.94,calibration=null; let lastSeen=0,lastVideo=-1,lastInfer=0;
@@ -65,8 +62,7 @@ out=a.map((v,i)=>v+(b[i]-v)*t); }else{ const angle=Math.acos(clamp(d,-1,1));
 const sin=Math.sin(angle); const u=Math.sin((1-t)*angle)/sin; const v=Math.sin(t*angle)/sin;
 out=a.map((x,i)=>x*u+b[i]*v); } const n=Math.hypot(...out)||1; return out.map(v=>v/n); }
 function palmRotate(q,v){ const u=[q[0],q[1],q[2]]; const uv=palmCross(u,v);
-const uuv=palmCross(u,uv); return v.map((x,i)=>x+2*(q[3]*uv[i]+uuv[i])); }
-function palmQuaternion(p){ const vector=(a,b)=>[ (front?-1:1)*(p[a].x-p[b].x), -(p[a].y-p[b].y),-(p[a].z-p[b].z) ]; const y=palmUnit(vector(9,0)); if(!y)return null; const across=vector(5,17);
+const uuv=palmCross(u,uv); return v.map((x,i)=>x+2*(q[3]*uv[i]+uuv[i])); }function palmQuaternion(p){ const vector=(a,b)=>[ (front?-1:1)*(p[a].x-p[b].x), -(p[a].y-p[b].y),-(p[a].z-p[b].z) ]; const y=palmUnit(vector(9,0)); if(!y)return null; const across=vector(5,17);
 const dot=across.reduce((sum,v,i)=>sum+v*y[i],0); let x=palmUnit(across.map((v,i)=>v-dot*y[i]));if(!x)return null; const z=palmUnit(palmCross(x,y)); if(!z)return null; x=palmCross(y,z);
 const m00=x[0],m01=y[0],m02=z[0]; const m10=x[1],m11=y[1],m12=z[1];
 const m20=x[2],m21=y[2],m22=z[2]; const trace=m00+m11+m22; let q,k; if(trace>0){
@@ -81,8 +77,7 @@ palmMotion.target=palmMultiply( q,[-r[0],-r[1],-r[2],r[3]] ); watchColorTurn(pal
 document.body.classList.add('palm-stage'); palmMotion.entered=true; } } $('boot').hidden=true;
 function status(message,hold=0){ if(!hold&&performance.now()<noticeUntil)return; if(hold){
 noticeUntil=performance.now()+hold; } if($('status').textContent!==message){
-$('status').textContent=message; } } function resize(){ W=innerWidth; H=innerHeight;
-const d=Math.min(devicePixelRatio||1,1.5); canvas.width=Math.round(W*d);canvas.height=Math.round(H*d); g.setTransform(d,0,0,d,0,0); } addEventListener('resize',resize);
+$('status').textContent=message; } } function resize(){ W=innerWidth; H=innerHeight;const d=Math.min(devicePixelRatio||1,1.5); canvas.width=Math.round(W*d);canvas.height=Math.round(H*d); g.setTransform(d,0,0,d,0,0); } addEventListener('resize',resize);
 resize(); function deadline(promise,ms,message,onLate){ let timer,expired=false;
 const timeout=new Promise((_,reject)=>{ timer=setTimeout(()=>{ expired=true;reject(new Error(message)); },ms); }); promise.then(value=>{ if(expired&&onLate){
 try{onLate(value);}catch(_){} } },()=>{}); return Promise.race([promise,timeout])
@@ -98,8 +93,7 @@ const check=()=>{ if(signal.aborted){ throw new Error('启动已取消'); } }; c
 bytes&&bytes.length>1000000&&bytes.length<30000000; let bytes=modelBytes||createEngine.modelBytes;
 const cacheKey=new URL( './hand-model-f16-v1.task', location.href ).href; let cache=null;
 if(!valid(bytes)&&globalThis.caches){ try{ cache=await deadline( caches.open('palm-bloom-model-v1'),
-1500, '缓存读取超时' ); const saved=await deadline((async()=>{ const response=await cache.match(cacheKey);
-return response ?new Uint8Array(await response.arrayBuffer()) :null; })(),2000,'缓存读取超时');if(valid(saved)){ bytes=saved; } }catch(_){} } check(); if(!valid(bytes)){ const urls=[
+1500, '缓存读取超时' ); const saved=await deadline((async()=>{ const response=await cache.match(cacheKey);return response ?new Uint8Array(await response.arrayBuffer()) :null; })(),2000,'缓存读取超时');if(valid(saved)){ bytes=saved; } }catch(_){} } check(); if(!valid(bytes)){ const urls=[
 new URL('./hand_landmarker.task',location.href).href,
 'https://cdn.jsdelivr.net/gh/cfornesa/augment-humankind@main/public/assets/vendor/mediapipe-hands/hand_landmarker.task','https://raw.githubusercontent.com/cfornesa/augment-humankind/main/public/assets/vendor/mediapipe-hands/hand_landmarker.task',
 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
@@ -115,8 +109,7 @@ if(i===urls.length-1){ throw new Error( '模型自动下载失败，请点击“
 ); } }finally{ clearTimeout(timer); signal.removeEventListener( 'abort',cancel ); } } check();
 if(cache){ cache.put( cacheKey, new Response(bytes,{ headers:{
 'Content-Type':'application/octet-stream' } }) ).catch(()=>{}); } } modelBytes=bytes;
-createEngine.modelBytes=bytes; const roots=[
-'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14','https://unpkg.com/@mediapipe/tasks-vision@0.10.14' ]; let stage='识别库下载'; let lastError;
+createEngine.modelBytes=bytes; const roots=['https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14','https://unpkg.com/@mediapipe/tasks-vision@0.10.14' ]; let stage='识别库下载'; let lastError;
 for(let i=0;i<roots.length;i++){ check(); try{ stage='识别库下载'; status( '模型已就绪 · 正在加载识别库，线路 '+(i+1) );
 const module=await deadline( import(roots[i]+'/vision_bundle.mjs'), 18000, '识别库下载超时' ); check();stage='运行环境初始化'; status('正在准备识别运行环境…'); const files=await deadline(
 module.FilesetResolver.forVisionTasks( roots[i]+'/wasm' ), 10000, '运行环境初始化超时' ); check();
@@ -132,8 +125,7 @@ palmMotion.entered=false; epoch++; if(controller){ controller.abort(); } control
 if(stream){ stream.getTracks().forEach(track=>track.stop()); } stream=null; active=false;
 starting=false; calibration=null; points=null; video.pause(); video.srcObject=null; lastVideo=-1;
 $('preview').hidden=true; $('calibration').hidden=true; $('camera').textContent='开启摄像头';
-$('camera').disabled=false; $('flip').disabled=false; $('importModel').disabled=false;
-$('amount').value=Math.round(manual*100); target=manual;bg.clearRect(0,0,overlay.width,overlay.height); noticeUntil=0; status(message||'手动预览 · 拖动滑杆控制粒子花');
+$('camera').disabled=false; $('flip').disabled=false; $('importModel').disabled=false;$('amount').value=Math.round(manual*100); target=manual;bg.clearRect(0,0,overlay.width,overlay.height); noticeUntil=0; status(message||(flowerStyle==='heart'?'手动预览 · 拖动滑杆控制心的舒展':'手动预览 · 拖动滑杆控制粒子花'));
 } async function startCamera(){ const id=++epoch; const abort=new AbortController();
 controller=abort; starting=true; noticeUntil=0; $('camera').textContent='取消启动';$('flip').disabled=true; $('importModel').disabled=true; status('正在申请摄像头权限，请点“允许”…'); try{
 if(!globalThis.isSecureContext){ throw new Error('摄像头需要 HTTPS 网址'); } if( !navigator.mediaDevices||
@@ -149,8 +141,7 @@ stream.getVideoTracks().forEach(track=>{ track.addEventListener('ended',()=>{ if
 stopCamera('摄像头已断开，请重新开启。'); } }); }); video.srcObject=stream; $('preview').hidden=false;
 video.style.transform= overlay.style.transform= front?'scaleX(-1)':'none'; await waitVideo();
 if(id!==epoch)return; if(!engine){ const created=await createEngine(abort.signal); if(id!==epoch){
-created.close(); return; } engine=created; } if(id!==epoch)return; active=true; starting=false;
-lastSeen=performance.now(); lastInfer=0; lastVideo=-1; frames=0; hits=0;$('camera').textContent='关闭摄像头'; $('flip').disabled=false; $('calibration').hidden=false;
+created.close(); return; } engine=created; } if(id!==epoch)return; active=true; starting=false;lastSeen=performance.now(); lastInfer=0; lastVideo=-1; frames=0; hits=0;$('camera').textContent='关闭摄像头'; $('flip').disabled=false; $('calibration').hidden=false;
 $('importModel').disabled=false; $('diagnostic').textContent='V9 · 正在等待视频帧'; status(
 '先张掌，完整放入预览画面；看到绿色骨骼线后再慢慢握拳。', 2200 ); }catch(error){ if(id!==epoch)return;let message=error.message; if(error.name==='NotAllowedError'){ message= '摄像头权限未获允许，请检查浏览器和系统的相机权限';
 } if(error.name==='NotFoundError'){ message='没有找到可用摄像头'; } if(error.name==='NotReadableError'){
@@ -166,8 +157,7 @@ $('modelFile').click(); }; $('modelFile').onchange=async event=>{ const file=eve
 event.target.value=''; if(!file||starting)return; stopCamera('正在导入模型…'); const id=epoch;
 starting=true; $('camera').disabled=true; $('flip').disabled=true; $('importModel').disabled=true;
 try{ if( !/\.task$/i.test(file.name)|| file.size<1000000|| file.size>30000000 ){ throw new Error(
-'请选择完整的 hand_landmarker.task 模型文件' ); } const bytes=new Uint8Array( await deadline(
-file.arrayBuffer(), 10000, '读取模型超时' ) ); if(id!==epoch)return; if(engine){try{engine.close();}catch(_){} engine=null; } modelBytes=bytes; createEngine.modelBytes=bytes;
+'请选择完整的 hand_landmarker.task 模型文件' ); } const bytes=new Uint8Array( await deadline(file.arrayBuffer(), 10000, '读取模型超时' ) ); if(id!==epoch)return; if(engine){try{engine.close();}catch(_){} engine=null; } modelBytes=bytes; createEngine.modelBytes=bytes;
 if(globalThis.caches){ const key=new URL( './hand-model-f16-v1.task', location.href ).href;caches.open('palm-bloom-model-v1') .then(cache=>cache.put( key, new Response(bytes,{ headers:{
 'Content-Type':'application/octet-stream' } }) )) .catch(()=>{}); } status('模型导入完成 · 请点击“开启摄像头”');
 $('diagnostic').textContent='V9 · 已导入本地模型'; }catch(error){ if(id===epoch){
@@ -184,8 +174,7 @@ if(!calibration)return; if(value!==null){ calibration.values.push(value); } cons
 (calibration.kind==='open'?'保持张掌':'保持握拳')+ ' · 采集中 '+remaining.toFixed(1)+' 秒' ); return; }
 const sample=calibration; calibration=null; if(sample.values.length<4){ status(
 '有效手部画面不足，请先张掌，让绿色骨骼线出现。', 4000 ); return; } sample.values.sort((a,b)=>a-b);
-const valueMedian=sample.values[ Math.floor(sample.values.length/2) ];
-if(sample.kind==='open'&&valueMedian>closed+.12){ opened=valueMedian; status('张掌校准完成。',2500);}else if( sample.kind==='closed'&& valueMedian<opened-.12 ){ closed=valueMedian;
+const valueMedian=sample.values[ Math.floor(sample.values.length/2) ];if(sample.kind==='open'&&valueMedian>closed+.12){ opened=valueMedian; status('张掌校准完成。',2500);}else if( sample.kind==='closed'&& valueMedian<opened-.12 ){ closed=valueMedian;
 status('握拳校准完成。',2500); }else{ status( '本次开合幅度不足，保留原参数；可以直接尝试开合。', 3500 ); } } function drawBones(){bg.clearRect(0,0,overlay.width,overlay.height); if(!points)return; const paths=[ [0,1,2,3,4],
 [0,5,6,7,8], [5,9,10,11,12], [9,13,14,15,16], [13,17,18,19,20], [0,17] ]; bg.strokeStyle='#b1f3c8';
 bg.lineWidth=2; for(const path of paths){ bg.beginPath(); path.forEach((index,k)=>{
@@ -200,10 +189,9 @@ const height=Math.max( 1, Math.round( 384*video.videoHeight/video.videoWidth ) )
 if(input.width!==384||input.height!==height){ input.width=384; input.height=height;
 overlay.width=320; overlay.height=Math.round( 320*video.videoHeight/video.videoWidth ); }
 inputCtx.drawImage( video,0,0,input.width,input.height );
-const result=engine.detectForVideo(input,time); frames++; palmRead(result); const found=
-result.landmarks&&result.landmarks[0]; if(found){ points=found; lastSeen=time; hits++; raw=openness(
+const result=engine.detectForVideo(input,time); frames++; palmRead(result); const found=result.landmarks&&result.landmarks[0]; if(found){ points=found; lastSeen=time; hits++; raw=openness(
 result.worldLandmarks&& result.worldLandmarks[0]||found ); value=raw; target=clamp((raw-closed)/Math.max(.12,opened-closed) ); if(!calibration){ status( '已识别手部 · '+
-(target<.15?'握拳 / 花苞': target>.85?'张掌 / 盛放': '粒子花正在绽放') ); } }else{ if(time-lastSeen>450){points=null; clearColorTurn(); } if(time-lastSeen>1200){ target=.06; if(!calibration){ status(
+(flowerStyle==='heart'?(target<.15?'握拳 / 凝光':target>.85?'张掌 / 舒展':'心随掌动'):(target<.15?'握拳 / 花苞':target>.85?'张掌 / 盛放':'粒子花正在绽放')) ); } }else{ if(time-lastSeen>450){points=null; clearColorTurn(); } if(time-lastSeen>1200){ target=.06; if(!calibration){ status(
 '未检测到手 · 请张掌并完整放入预览框，也可尝试切换镜头' ); } } } $('diagnostic').textContent= 'V9 · 已处理 '+frames+
 ' 帧 · 检出手 '+hits+' 次'; drawBones(); } if(time-lastInfer>4500&&!calibration){
 status('摄像头画面没有更新，请关闭后重新开启。'); } updateCalibration(time,value); } function frame(time){
@@ -211,13 +199,12 @@ const dt=Math.min( .05, Math.max(0,(time-previous)/1000) ); previous=time; if(ac
 track(time); }catch(error){ if(engine){ try{engine.close();}catch(_){} engine=null; } stopCamera(
 '识别中断：'+error.message+ '。请重新开启，或使用手动滑杆。' ); } } bloom+=(target-bloom)*(1-Math.exp(-dt*8));
 $('percent').textContent= Math.round(bloom*100)+'%'; if(active){
-$('amount').value=Math.round(bloom*100); } if(time-lastPaint>(starting?80:32)){ lastPaint=time;
+$('amount').value=Math.round(bloom*100); } if(time-lastPaint>(starting?80:(flowerStyle==='heart'?16:32))){ lastPaint=time;
 g.clearRect(0,0,W,H); drawFlower(time); } requestAnimationFrame(frame); }
 addEventListener('pagehide',()=>stopCamera()); addEventListener('pageshow',()=>{ if(active){
 video.play().catch(()=>{}); } }); requestAnimationFrame(frame); $('reset').onclick=()=>{ clearColorTurn();
 palmMotion.reference=null; palmMotion.target=[0,0,0,1]; if(drawFlower.space){
-drawFlower.space.yaw=0; drawFlower.space.pitch=.43; drawFlower.space.auto=0; } status(
-'下一次识别到的手掌姿态将作为正向。', 2500 ); }; let palmTap=null; canvas.addEventListener('pointerdown',e=>{
+drawFlower.space.yaw=0; drawFlower.space.pitch=.43; drawFlower.space.auto=0; } status('下一次识别到的手掌姿态将作为正向。', 2500 ); }; let palmTap=null; canvas.addEventListener('pointerdown',e=>{
 palmTap={ x:e.clientX, y:e.clientY, time:performance.now() }; });
 canvas.addEventListener('pointerup',e=>{ if( palmTap&&active&& performance.now()-palmTap.time<400&&Math.hypot( e.clientX-palmTap.x, e.clientY-palmTap.y )<8 ){
 document.body.classList.toggle('palm-stage'); } palmTap=null; });
@@ -234,8 +221,7 @@ n/count*Math.PI*2+layer*.43; const add=(t,u,edge)=>s.dust.push({ layer,a,t,u,edg
 phase:rand()*6.28, size:edge ? .9 : .85+rand()*.6 }); for(let i=0;i<56;i++){
 add(rand(),rand()*2-1,false); } for(let i=0;i<22;i++){ add((i+.3)/22,-1,true);
 add((i+.3)/22,1,true); } for(let i=0;i<14;i++){ add((i+.5)/14,0,true); } } }
-canvas.style.pointerEvents='auto'; canvas.style.touchAction='none';
-canvas.addEventListener('pointerdown',e=>{ if(active)return; s.drag={ x:e.clientX, y:e.clientY };
+canvas.style.pointerEvents='auto'; canvas.style.touchAction='none';canvas.addEventListener('pointerdown',e=>{ if(active)return; s.drag={ x:e.clientX, y:e.clientY };
 s.last=performance.now(); if(canvas.setPointerCapture){ canvas.setPointerCapture(e.pointerId); } });
 canvas.addEventListener('pointermove',e=>{ if(active||!s.drag)return;s.yaw+=(e.clientX-s.drag.x)*.007; s.pitch=clamp( s.pitch+(e.clientY-s.drag.y)*.005, -.2,1.15 );
 s.drag={ x:e.clientX, y:e.clientY }; s.last=performance.now(); }); const release=()=>{ s.drag=null;s.last=performance.now(); }; canvas.addEventListener('pointerup',release);
@@ -251,8 +237,7 @@ const sa=Math.sin(angle); const cp=Math.cos(s.pitch); const sp=Math.sin(s.pitch)
 function add(x,y,z,color,size,alpha){ const v=palmRotate( palmMotion.q,[x,y-85,z] );
 const X=v[0]*ca+v[2]*sa; const Z=-v[0]*sa+v[2]*ca; const yy=v[1]*cp-Z*sp; const zz=v[1]*sp+Z*cp;
 const k=720/(720-zz); list.push({ x:W*.5+X*k*scale, y:centerY-yy*k*scale, d:zz,
-size:Math.max(.8,size*k*scale), color, alpha:alpha*clamp( (zz+440)/800,.23,1 ) }); }
-if(drawFlowerVariant(time,add,list))return; for(const p of s.dust){ const o=clamp(
+size:Math.max(.8,size*k*scale), color, alpha:alpha*clamp( (zz+440)/800,.23,1 ) }); }if(drawFlowerVariant(time,add,list))return; for(const p of s.dust){ const o=clamp(
 (bloom-p.layer*.045)/ (1-p.layer*.045) ); const L=139-p.layer*19;
 const bend=.09+o*(1.12-p.layer*.12); const a=p.a+o*.08*Math.sin(p.t*Math.PI); const ca2=Math.cos(a);const sa2=Math.sin(a); const st=Math.max( .00001, Math.sin(Math.PI*p.t) );
 const ct=Math.cos(Math.PI*p.t); const widthBase= (30-p.layer*2.4)*(.32+.68*o); const width=widthBase*Math.pow(st,.72); const r=5+ L*Math.sin(bend)*p.t+ .13*L*o*st; const y=38+p.layer*3+
@@ -267,24 +252,22 @@ ca2*width ]; const normal=palmUnit( palmCross(tangent,across) )||[0,1,0]; const 
 y+normal[1]*d, z+normal[2]*d, color, p.size*2.6, alpha ); } } list.sort((a,b)=>a.d-b.d); g.save();
 g.globalCompositeOperation='lighter'; const colorSprites=flowerColorSprites(s.sprites,'original',time); for(const p of list){ g.globalAlpha=p.alpha; g.drawImage(
 colorSprites[p.color], p.x-p.size, p.y-p.size, p.size*2, p.size*2 ); } g.restore(); g.globalAlpha=1; }
-/* 三种花朵：追加功能 */ let flowerStyle='original'; const flowerVariants={rose:null,lycoris:null};
-const flowerRow=document.createElement('div');
+/* 三种花朵：追加功能 */ let flowerStyle='original'; const flowerVariants={rose:null,lycoris:null};const flowerRow=document.createElement('div');
 flowerRow.style.cssText='display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:#a0b4c4';
-const flowerLabel=document.createElement('label'); flowerLabel.htmlFor='flowerStyle';flowerLabel.textContent='花朵样式'; const flowerSelect=document.createElement('select');
-flowerSelect.id='flowerStyle'; flowerSelect.setAttribute('aria-label','选择花朵样式');flowerSelect.style.cssText='flex:1;min-width:0;min-height:40px;padding:8px 10px;border:1px solid #ffffff25;border-radius:10px;background:#101e2d;color:#e5f1fc;font:inherit';
-[ ['original','① 原有花朵'], ['rose','② 饱满玫瑰'], ['lycoris','③ 彼岸花'] ].forEach(([value,title])=>{
+const flowerLabel=document.createElement('label'); flowerLabel.htmlFor='flowerStyle';flowerLabel.textContent='掌心形态'; const flowerSelect=document.createElement('select');
+flowerSelect.id='flowerStyle'; flowerSelect.setAttribute('aria-label','选择花朵或粒子心');flowerSelect.style.cssText='flex:1;min-width:0;min-height:40px;padding:8px 10px;border:1px solid #ffffff25;border-radius:10px;background:#101e2d;color:#e5f1fc;font:inherit';
+[ ['original','① 原有花朵'], ['rose','② 饱满玫瑰'], ['lycoris','③ 彼岸花'], ['heart','④ 心随掌动'] ].forEach(([value,title])=>{
 const option=document.createElement('option'); option.value=value; option.textContent=title;
 flowerSelect.appendChild(option); }); flowerSelect.value='original';
 flowerRow.appendChild(flowerLabel); flowerRow.appendChild(flowerSelect);
 document.querySelector('.panel .row').insertAdjacentElement('afterend',flowerRow);
-flowerSelect.onchange=()=>{ flowerStyle=flowerSelect.value; clearColorTurn(); }; function flowerGlow(color){
+flowerSelect.onchange=()=>{ flowerStyle=flowerSelect.value; clearColorTurn(); updateSceneStyle(); }; function flowerGlow(color){
 const c=document.createElement('canvas'); c.width=c.height=32; const q=c.getContext('2d');
 const a=q.createRadialGradient(16,16,0,16,16,16); a.addColorStop(0,'rgba('+color+',1)');
 a.addColorStop(.18,'rgba('+color+',.90)'); a.addColorStop(.45,'rgba('+color+',.22)');
 a.addColorStop(1,'rgba('+color+',0)'); q.fillStyle=a; q.fillRect(0,0,32,32); return c; }
 function roseSurface(layer,a,t,u,o){ const st=Math.max(.00001,Math.sin(Math.PI*t));
-const round=Math.pow(st,.55); const angle=a+(.50+layer*.10)*(1-t)+.18*o*t;
-const width=(43-layer*6)*(.35+.65*o)*round; const r=5+t*(16+(91-layer*17)*o)+7*(1-u*u)*st;
+const round=Math.pow(st,.55); const angle=a+(.50+layer*.10)*(1-t)+.18*o*t;const width=(43-layer*6)*(.35+.65*o)*round; const r=5+t*(16+(91-layer*17)*o)+7*(1-u*u)*st;
 const y=38+layer*9+(127-layer*12)*t -(49-layer*7)*o*t*t -15*o*Math.pow(t,6) -u*u*11*round
 +5*o*Math.sin(u*Math.PI)*Math.pow(t,3); return [ Math.cos(angle)*r-Math.sin(angle)*u*width, y,Math.sin(angle)*r+Math.cos(angle)*u*width ]; } function buildRose(open){ const points=[];
 let seed=912; const rand=()=>{ seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296; }; const counts=[9,8,6,5,3]; for(let layer=0;layer<counts.length;layer++){
@@ -300,8 +283,7 @@ edge?2.5:2.4, edge ? .90 : .38 ]); } }; for(let i=0;i<40;i++){
 sample(.006+rand()*.988,rand()*2-1,false); } for(let i=0;i<22;i++){ sample((i+.5)/22,-1,true);
 sample((i+.5)/22,1,true); } for(let i=0;i<8;i++){ sample((i+.5)/8,0,false); } } } return points; }
 function buildLycoris(open){ const points=[]; const emit=(x,y,z,color,size,alpha)=>{
-points.push([x*.84,85+(y-85)*.84,z*.84,color,size,alpha]); }; for(let flower=0;flower<6;flower++){
-const a=flower/6*Math.PI*2; const ca=Math.cos(a),sa=Math.sin(a); const spread=8+34*open;
+points.push([x*.84,85+(y-85)*.84,z*.84,color,size,alpha]); }; for(let flower=0;flower<6;flower++){const a=flower/6*Math.PI*2; const ca=Math.cos(a),sa=Math.sin(a); const spread=8+34*open;
 const cx=ca*spread,cy=65,cz=sa*spread; const lean=.15+.65*open; const up=Math.sqrt(1-lean*lean);
 const local=(r,angle,h)=>{ const e=r*Math.cos(angle),f=r*Math.sin(angle); return [cx-sa*e-up*ca*f+lean*ca*h, cy+lean*f+up*h, cz+ca*e-up*sa*f+lean*sa*h ]; };
 for(let petal=0;petal<6;petal++){ const angle=petal/6*Math.PI*2+flower*.37; for(let i=0;i<32;i++){const t=(i+.5)/32; const st=Math.sin(Math.PI*t); const theta=angle+.38*open*t+
@@ -317,8 +299,7 @@ const h=t*(117-27*open)+22*open*Math.sin(Math.PI*t); const p=local(r,angle+.23*o
 emit(p[0],p[1],p[2],2,1.35,.80); tip=p; } for(let i=0;i<7;i++){ const u=(i-3)*.75; emit(
 tip[0]-sa*u,tip[1]+u*.35,tip[2]+ca*u, 3,1.7,.93 ); } } for(let i=0;i<40;i++){
 const t=i/40*Math.PI*2; emit(cx+Math.cos(t)*4,cy+Math.sin(t*3)*3,cz+Math.sin(t)*4,1,1.6,.65); } }
-return points; } function drawFlowerVariant(time,add,list){
-if(flowerStyle==='original')return false; let cache=flowerVariants[flowerStyle]; if(!cache){
+return points; } function drawFlowerVariant(time,add,list){ if(flowerStyle==='heart'){drawParticleHeart(time);return true;}if(flowerStyle==='original')return false; let cache=flowerVariants[flowerStyle]; if(!cache){
 const colors=flowerStyle==='rose' ?['255,191,205','239,50,105','191,31,90','255,220,211']
 :['255,105,122','230,28,68','255,68,89','255,213,163']; cache=flowerVariants[flowerStyle]={sprites:colors.map(flowerGlow), open:-1, points:[] }; } const open=Math.round(clamp(bloom)*250)/250;
 if(cache.open!==open){ cache.points=flowerStyle==='rose' ?buildRose(open):buildLycoris(open);cache.open=open; } for(const p of cache.points){ add(p[0],p[1],p[2],p[3],p[4],p[5]); }
@@ -334,10 +315,9 @@ turnState.q=null; turnState.time=0; turnState.angle=0; } function softHsl(h,s,l)
 h=((h%360)+360)%360/360; const f=n=>{ const k=(n+h*12)%12;
 return Math.round(255*(l-s*Math.min(l,1-l)*Math.max(-1,Math.min(k-3,9-k,1)))); };
 return [f(0),f(8),f(4)]; } function randomFlowerColor(){
-const h=colorState.hue===null?Math.random()*360: (colorState.hue+70+Math.random()*220)%360;
-colorState.hue=h; colorState.palette=[ softHsl(h-7,.16,.86), softHsl(h,.29,.74),
+const h=colorState.hue===null?Math.random()*360: (colorState.hue+70+Math.random()*220)%360;colorState.hue=h; colorState.palette=[ softHsl(h-7,.16,.86), softHsl(h,.29,.74),
 softHsl(h+10,.27,.65), softHsl(h+20,.12,.89) ]; colorState.random=true; colorState.version++; }
-function watchColorTurn(q,time){ const n=Math.hypot(...q); if(!Number.isFinite(n)||n<.001)return;q=q.map(v=>v/n); const previous=turnState.q; const dt=(time-turnState.time)/1000; turnState.q=q;
+function watchColorTurn(q,time){ if(flowerStyle==='heart'){clearColorTurn();return;} const n=Math.hypot(...q); if(!Number.isFinite(n)||n<.001)return;q=q.map(v=>v/n); const previous=turnState.q; const dt=(time-turnState.time)/1000; turnState.q=q;
 turnState.time=time; if(!previous||dt<=0||dt>1){ turnState.angle=0; return; }
 let d=palmMultiply(q,[-previous[0],-previous[1],-previous[2],previous[3]]);
 if(d[3]<0)d=d.map(v=>-v); const size=Math.hypot(d[0],d[1],d[2]);
@@ -351,8 +331,7 @@ if(!bank&&!colorState.random)return defaults; const base=baseFlowerColors[kind];
 bank=colorState.banks[kind]={ sprites:defaults.map(()=>{ const c=document.createElement('canvas');
 c.width=c.height=32; return c; }), from:base.map(rgb=>rgb.slice()), to:base.map(rgb=>rgb.slice()),
 start:time,version:-1,paint:-Infinity }; } if(bank.version!==colorState.version){
-bank.from=colorBankValue(bank,time);
-bank.to=(colorState.random?colorState.palette.slice(0,base.length):base) .map(rgb=>rgb.slice());
+bank.from=colorBankValue(bank,time);bank.to=(colorState.random?colorState.palette.slice(0,base.length):base) .map(rgb=>rgb.slice());
 bank.start=time; bank.version=colorState.version; bank.paint=-Infinity; }
 if(!colorState.random&&time-bank.start>=1100)return defaults;
 if(time-bank.paint<50)return bank.sprites; bank.paint=time; const colors=colorBankValue(bank,time);
@@ -362,8 +341,57 @@ a.addColorStop(kind==='original' ? .16 : .18,'rgba('+rgb+','+(kind==='original' 
 a.addColorStop(kind==='original' ? .42 : .45,'rgba('+rgb+','+(kind==='original' ? .26 : .22)+')');
 a.addColorStop(1,'rgba('+rgb+',0)'); q.clearRect(0,0,32,32); q.fillStyle=a; q.fillRect(0,0,32,32);
 }); return bank.sprites; } $('resetColor').onclick=()=>{ colorState.random=false;
-colorState.version++; clearColorTurn(); }; })();
+colorState.version++; clearColorTurn(); }; /* 心随掌动：体积粒子心 */ let heartCloud=null; const sceneCopy={
+title:document.title, heading:document.querySelector('header h1').textContent,
+note:document.querySelector('header p').innerHTML, label:flowerLabel.textContent };
+function updateSceneStyle(){ const heart=flowerStyle==='heart';
+document.querySelector('header h1').textContent=heart?'心随掌动':sceneCopy.heading;
+document.querySelector('header p').innerHTML=heart? '握则凝光，舒则心展<br>一握一舒，皆由你心':sceneCopy.note;
+document.title=heart?'心随掌动 · 作者：杨瑞琪':sceneCopy.title; flowerLabel.textContent='掌心形态';
+$('resetColor').disabled=heart; $('amount').setAttribute('aria-label',heart?'心的舒展程度':'花朵开放程度');const labels=document.querySelectorAll('.labels span'); labels[0].textContent=heart?'收缩':'收拢';
+labels[2].textContent=heart?'舒展':'盛放'; if(!active&&!starting){ noticeUntil=0;
+status(heart?'手动预览 · 拖动滑杆，让心随掌舒展':'手动预览 · 拖动滑杆控制花朵'); } } function heartField(x,y,z){
+const a=x*x+2.25*z*z+y*y-1; return a*a*a-x*x*y*y*y-.1125*z*z*y*y*y; } function buildHeartCloud(){
+let seed=20261028; const rand=()=>{ seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+return seed/4294967296; }; const points=[]; const append=(x,y,z,surface)=>{
+const firefly=rand()<.025;
+points.push({x,y,z,surface,firefly,phase:rand()*Math.PI*2,size:.8+rand()*.5}); }; let attempts=0;
+while(points.length<4000&&attempts++<80000){ const x=(rand()-.5)*2.8; const y=-1.1+rand()*2.5;
+const z=(rand()-.5)*1.6; if(heartField(x,y,z)<0)append(x,y,z,false); } for(let i=0;i<2000;i++){
+const y=1-2*(i+.5)/2000; const a=i*2.399963; const r=Math.sqrt(Math.max(0,1-y*y));
+const x=r*Math.cos(a),z=r*Math.sin(a); let lo=0,hi=2; for(let j=0;j<16;j++){ const m=(lo+hi)/2;
+if(heartField(x*m,y*m,z*m)<=0)lo=m;else hi=m; } append(x*lo,y*lo,z*lo,true); } return { points,
+sprites:[ softHsl(354,.30,.86), softHsl(354,.35,.76), softHsl(350,.32,.70)
+].map(rgb=>flowerGlow(rgb.join(','))), dots:points.map(p=>({p,x:0,y:0,d:0,size:0,alpha:0,color:0})),
+open:bloom,last:0 }; } function drawParticleHeart(time){
+if(!heartCloud)heartCloud=buildHeartCloud(); const cloud=heartCloud;
+const dt=cloud.last?clamp((time-cloud.last)/1000,0,.05):0; cloud.last=time; const before=cloud.open;
+const response=bloom<before?14:9; cloud.open+=(clamp(bloom)-before)*(1-Math.exp(-dt*response));
+const open=clamp(cloud.open); const kick=dt>0?clamp((before-open)/dt*.05,0,.12):0;const sx=(.42+.58*open)*(1+kick*.08); const sy=(.36+.64*open)*(1-kick*.10); const sz=.48+.52*open;
+const closed=1-open; const view=drawFlower.space;
+const a=view.yaw+view.auto,ca=Math.cos(a),sa=Math.sin(a);
+const cp=Math.cos(view.pitch),sp=Math.sin(view.pitch);
+const q=palmMotion.q,x=q[0],y=q[1],z=q[2],w=q[3]; const r0=[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)];
+const r1=[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)]; const r2=[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)];
+const matrix=[[],[],[]]; for(let i=0;i<3;i++){ const X=ca*r0[i]+sa*r2[i];
+const Z=-sa*r0[i]+ca*r2[i]; matrix[0][i]=X; matrix[1][i]=cp*r1[i]-sp*Z; matrix[2][i]=sp*r1[i]+cp*Z;
+} const c=Math.cos(.43),s=Math.sin(.43); for(const row of matrix){ const y=row[1],z=row[2];
+row[0]*=86*sx; row[1]=(y*c-z*s)*86*sy; row[2]=(y*s+z*c)*86*sz; }
+const m0=matrix[0],m1=matrix[1],m2=matrix[2]; const scale=Math.min(W/350,H/480,1.9)*view.zoom;
+const centerY=document.body.classList.contains('palm-stage')?H*.5:H*.43;
+for(const dot of cloud.dots){ const p=dot.p; const X=p.x,Y=p.y-.08,Z=p.z;
+const xx=m0[0]*X+m0[1]*Y+m0[2]*Z; const yy=m1[0]*X+m1[1]*Y+m1[2]*Z;
+const zz=m2[0]*X+m2[1]*Y+m2[2]*Z; const k=720/Math.max(120,720-zz);
+const shimmer=.92+.08*Math.sin(time*.0027+p.phase);
+const spark=p.firefly?Math.pow(.5+.5*Math.sin(time*.004+p.phase),3):0;
+const alpha=(p.surface ? .62 : .42)*(1+.25*closed)*shimmer+spark*.22*closed;
+const size=(p.surface?3.2:3.0)*p.size*(.48+.52*open)+spark*1.1*closed; dot.x=W*.5+xx*k*scale;
+dot.y=centerY-yy*k*scale; dot.d=zz; dot.size=Math.max(.65,size*k*scale);
+dot.alpha=alpha*clamp((zz+440)/800,.23,1); dot.color=p.firefly?0:(p.surface?1:2); }
+cloud.dots.sort((a,b)=>a.d-b.d); g.save(); g.globalCompositeOperation='lighter';for(const p of cloud.dots){ g.globalAlpha=p.alpha;
+g.drawImage(cloud.sprites[p.color],p.x-p.size,p.y-p.size,p.size*2,p.size*2); } g.restore();
+g.globalAlpha=1; } /* 心随掌动功能结束 */ })();
 </script>
 </body>
 </html>
-<!-- 三种花朵柔和换色完整版结束 -->
+<!-- 花与心完整结束 -->
