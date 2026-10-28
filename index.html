@@ -392,6 +392,177 @@ cloud.dots.sort((a,b)=>a.d-b.d); g.save(); g.globalCompositeOperation='lighter';
 g.drawImage(cloud.sprites[p.color],p.x-p.size,p.y-p.size,p.size*2,p.size*2); } g.restore();
 g.globalAlpha=1; } /* 心随掌动功能结束 */ })();
 </script>
+<script>
+(function(){
+const preview=document.getElementById('preview');
+if(!preview||preview.dataset.dragReady)return;
+preview.dataset.dragReady='1';
+
+const ratio=4/3,pad=8;
+let box=null,gesture=null;
+const limit=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+const bounds=()=>({
+ left:pad,top:pad,
+ right:Math.max(pad+1,innerWidth-pad),
+ bottom:Math.max(pad+1,innerHeight-pad)
+});
+
+const css=document.createElement('style');
+css.textContent=
+ '#preview{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}'+
+ '#preview video,#preview canvas,#preview span{pointer-events:none}'+
+ '#preview .camera-grip{position:absolute;width:11px;height:11px;pointer-events:none;opacity:.75;border-color:#cbe9f0;border-style:solid;border-width:0;z-index:3}'+
+ '#preview .grip-nw{left:2px;top:2px;border-left-width:2px;border-top-width:2px;border-radius:5px 0 0 0}'+
+ '#preview .grip-ne{right:2px;top:2px;border-right-width:2px;border-top-width:2px;border-radius:0 5px 0 0}'+
+ '#preview .grip-sw{left:2px;bottom:2px;border-left-width:2px;border-bottom-width:2px;border-radius:0 0 0 5px}'+
+ '#preview .grip-se{right:2px;bottom:2px;border-right-width:2px;border-bottom-width:2px;border-radius:0 0 5px 0}';
+
+document.head.appendChild(css);
+
+['nw','ne','sw','se'].forEach(corner=>{
+ const mark=document.createElement('i');
+ mark.className='camera-grip grip-'+corner;
+ mark.setAttribute('aria-hidden','true');
+ preview.appendChild(mark);
+});
+
+function apply(next){
+ box={...next};
+ Object.assign(preview.style,{
+  left:box.x+'px',top:box.y+'px',
+  width:box.w+'px',height:box.w/ratio+'px',
+  right:'auto',bottom:'auto',transform:'none'
+ });
+}
+
+function fit(){
+ if(preview.hidden)return;
+ const r=preview.getBoundingClientRect();
+ const b=bounds();
+ const current=box||{x:r.left,y:r.top,w:r.width};
+ const max=Math.min(b.right-b.left,(b.bottom-b.top)*ratio);
+ const w=limit(current.w,Math.min(96,max),max);
+ apply({
+  x:limit(current.x,b.left,b.right-w),
+  y:limit(current.y,b.top,b.bottom-w/ratio),
+  w
+ });
+}function edges(event,r){
+ const zone=event.pointerType==='mouse'?10:18;
+ return {
+  sx:event.clientX-r.left<zone?-1:r.right-event.clientX<zone?1:0,
+  sy:event.clientY-r.top<zone?-1:r.bottom-event.clientY<zone?1:0
+ };
+}
+
+function cursor(edge){
+ if(edge.sx&&edge.sy){
+  return edge.sx===edge.sy?'nwse-resize':'nesw-resize';
+ }
+ return edge.sx?'ew-resize':edge.sy?'ns-resize':'grab';
+}
+
+function finish(event){
+ if(!gesture||(event&&event.pointerId!==gesture.id))return;
+ const id=gesture.id;
+ gesture=null;
+ preview.style.cursor='grab';
+ try{
+  if(preview.hasPointerCapture(id)){
+   preview.releasePointerCapture(id);
+  }
+ }catch(_){}
+}
+
+preview.addEventListener('pointerdown',event=>{
+ if(gesture||event.button!==0)return;
+ fit();
+ const r=preview.getBoundingClientRect();
+ const edge=edges(event,r);
+
+ gesture={
+  id:event.pointerId,
+  px:event.clientX,py:event.clientY,
+  x:box.x,y:box.y,w:box.w,
+  sx:edge.sx,sy:edge.sy,b:bounds()
+ };
+
+ gesture.ax=box.x+(edge.sx<0?box.w:edge.sx>0?0:box.w/2);
+ gesture.ay=box.y+(edge.sy<0?box.w/ratio:edge.sy>0?0:box.w/ratio/2);
+
+ preview.style.cursor=edge.sx||edge.sy?cursor(edge):'grabbing';
+ try{preview.setPointerCapture(event.pointerId);}catch(_){}
+ event.preventDefault();
+ event.stopPropagation();
+});preview.addEventListener('pointermove',event=>{
+ if(!gesture){
+  if(event.pointerType==='mouse'){
+   preview.style.cursor=cursor(
+    edges(event,preview.getBoundingClientRect())
+   );
+  }
+  return;
+ }
+
+ if(event.pointerId!==gesture.id)return;
+ const s=gesture;
+ const dx=event.clientX-s.px,dy=event.clientY-s.py;
+ const b=s.b;
+
+ if(!s.sx&&!s.sy){
+  apply({
+   x:limit(s.x+dx,b.left,b.right-s.w),
+   y:limit(s.y+dy,b.top,b.bottom-s.w/ratio),
+   w:s.w
+  });
+ }else{
+  const dw=s.sx&&s.sy?
+   (s.sx*dx+s.sy*dy/ratio)/(1+1/(ratio*ratio)):
+   s.sx?s.sx*dx:s.sy*dy*ratio;
+
+  const roomX=s.sx<0?s.ax-b.left:s.sx>0?b.right-s.ax:
+   2*Math.min(s.ax-b.left,b.right-s.ax);
+
+  const roomY=s.sy<0?s.ay-b.top:s.sy>0?b.bottom-s.ay:
+   2*Math.min(s.ay-b.top,b.bottom-s.ay);
+
+  const max=Math.max(1,Math.min(roomX,roomY*ratio));
+  const w=limit(s.w+dw,Math.min(96,max),max);
+
+  apply({
+   x:s.sx<0?s.ax-w:s.sx>0?s.ax:s.ax-w/2,
+   y:s.sy<0?s.ay-w/ratio:s.sy>0?s.ay:s.ay-w/ratio/2,
+   w
+  });
+ }
+
+ event.preventDefault();
+ event.stopPropagation();
+});
+
+preview.addEventListener('pointerup',finish);
+preview.addEventListener('pointercancel',finish);
+preview.addEventListener('lostpointercapture',finish);
+preview.addEventListener('contextmenu',event=>event.preventDefault());
+
+addEventListener('resize',()=>{
+ finish();
+ fit();
+});
+
+addEventListener('blur',()=>finish());
+
+new MutationObserver(()=>{
+ if(preview.hidden)finish();else fit();
+}).observe(preview,{
+ attributes:true,
+ attributeFilter:['hidden']
+});
+
+if(!preview.hidden)fit();
+})();
+</script>
 </body>
 </html>
 <!-- 花与心完整结束 -->
