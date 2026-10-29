@@ -390,7 +390,273 @@ dot.y=centerY-yy*k*scale; dot.d=zz; dot.size=Math.max(.65,size*k*scale);
 dot.alpha=alpha*clamp((zz+440)/800,.23,1); dot.color=p.firefly?0:(p.surface?1:2); }
 cloud.dots.sort((a,b)=>a.d-b.d); g.save(); g.globalCompositeOperation='lighter';for(const p of cloud.dots){ g.globalAlpha=p.alpha;
 g.drawImage(cloud.sprites[p.color],p.x-p.size,p.y-p.size,p.size*2,p.size*2); } g.restore();
-g.globalAlpha=1; } /* 心随掌动功能结束 */ })();
+g.globalAlpha=1; } /* 心随掌动功能结束 */
+/* 生日蛋糕与荧光祝福 */
+let birthdayCake=null;
+
+const birthdayOption=document.createElement('option');
+birthdayOption.value='cake';
+birthdayOption.textContent='⑤ 生日蛋糕';
+flowerSelect.appendChild(birthdayOption);
+
+const birthdayLayer=document.createElement('div');
+birthdayLayer.id='birthdayWishes';
+birthdayLayer.style.cssText=
+ 'position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:6';
+document.body.appendChild(birthdayLayer);
+
+const birthdayCss=document.createElement('style');
+birthdayCss.textContent=
+ '#birthdayWishes .birthday-word{position:absolute;white-space:nowrap;font-family:system-ui,"Microsoft YaHei",sans-serif;font-weight:600;letter-spacing:.08em;opacity:0;will-change:transform,opacity;animation:birthdayWish 2.5s ease-out both;text-shadow:0 0 5px currentColor,0 0 15px var(--glow),0 0 30px var(--glow)}'+
+ '@keyframes birthdayWish{0%{opacity:0;transform:translate(-50%,18px) scale(.55)}16%{opacity:1;transform:translate(-50%,-22px) scale(1.08)}32%{opacity:1;transform:translate(-50%,-40px) scale(1)}72%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--drift)),-150px) scale(.96)}}';
+document.head.appendChild(birthdayCss);
+
+function birthdayBurst(){
+ if(flowerStyle!=='cake')return;
+
+ while(birthdayLayer.children.length>4){
+  birthdayLayer.firstElementChild.remove();
+ }
+
+ const scale=Math.min(W/350,H/480,1.9);
+ const center=document.body.classList.contains('palm-stage')?H*.5:H*.43;
+ const top=clamp(center-60*scale,95,Math.max(95,H-100));
+ const offset=Math.min(72,W*.18);
+
+ for(let i=0;i<2;i++){
+  const word=document.createElement('span');
+  word.className='birthday-word';
+  word.textContent='生日快乐';
+
+  const side=i===0?-1:1;
+
+  Object.assign(word.style,{
+   left:W*.5+side*offset+'px',
+   top:top+'px',
+   fontSize:Math.min(30,Math.max(20,W*.067))+'px',
+   color:i===0?'#ffe0ec':'#dceeff',
+   animationDelay:i*.18+'s'
+  });
+
+  word.style.setProperty('--drift',side*18+'px');
+  word.style.setProperty('--glow',i===0?'#d9a1b8':'#a0bfd8');
+  word.addEventListener('animationend',()=>word.remove(),{once:true});
+  birthdayLayer.appendChild(word);
+  setTimeout(()=>word.remove(),3000);
+ }
+ }function buildBirthdayCake(){
+ const points=[];
+ let seed=20261029;
+
+ const rand=()=>{
+  seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+  return seed/4294967296;
+ };
+
+ const point=(x,y,z,color,size=2.2,alpha=.55,flame=-1)=>{
+  points.push([x,y,z,color,size,alpha,flame]);
+ };
+
+ const tiers=[
+  {r:101,y:27,h:40,side:600,top:380,inside:220},
+  {r:73,y:67,h:33,side:480,top:300,inside:180},
+  {r:45,y:100,h:28,side:360,top:220,inside:140}
+ ];
+
+ tiers.forEach((tier,layer)=>{
+  const top=tier.y+tier.h;
+
+  for(let i=0;i<tier.side;i++){
+   const a=rand()*Math.PI*2,t=rand();
+   const r=tier.r+(rand()-.5)*2;
+
+   point(
+    Math.cos(a)*r,tier.y+t*tier.h,Math.sin(a)*r,
+    t>.82?0:layer%2?2:1,2.3,.56
+   );
+  }
+
+  for(let i=0;i<tier.top;i++){
+   const a=rand()*Math.PI*2,r=Math.sqrt(rand())*tier.r;
+
+   point(
+    Math.cos(a)*r,top+(rand()-.5)*1.8,
+    Math.sin(a)*r,0,2.25,.50
+   );
+  }
+
+  for(let i=0;i<tier.inside;i++){
+   const a=rand()*Math.PI*2,r=Math.sqrt(rand())*tier.r;
+
+   point(
+    Math.cos(a)*r,tier.y+rand()*tier.h,
+    Math.sin(a)*r,layer%2?2:1,1.8,.29
+   );
+  }
+
+  for(let i=0;i<144;i++){
+   const a=i/144*Math.PI*2;
+   const x=Math.cos(a)*tier.r,z=Math.sin(a)*tier.r;
+
+   point(x,tier.y,z,3,2.15,.78);
+   point(x,top,z,0,2.5,.82);
+
+   const drip=3+4*(.5+.5*Math.sin(a*12+layer))**2;
+
+   point(x,top-drip,z,0,2.35,.73);
+   point(x*.986,top-drip-1.5,z*.986,0,2.0,.60);
+  }
+ }); for(let berry=0;berry<8;berry++){
+  const a=berry/8*Math.PI*2;
+
+  for(let i=0;i<32;i++){
+   const y=1-2*(i+.5)/32;
+   const radius=4.1*Math.sqrt(1-y*y);
+   const angle=i*2.399963;
+
+   point(
+    Math.cos(a)*29+Math.cos(angle)*radius,
+    132+y*4.1,
+    Math.sin(a)*29+Math.sin(angle)*radius,
+    1,2.0,.70
+   );
+  }
+ }
+
+ for(let candle=0;candle<3;candle++){
+  const x=(candle-1)*14,z=candle===1?7:-5;
+  const height=candle===1?23:18;
+
+  for(let i=0;i<64;i++){
+   const a=i*2.399963;
+
+   point(
+    x+Math.cos(a)*1.8,130+height*i/63,
+    z+Math.sin(a)*1.8,2,1.7,.75
+   );
+  }
+
+  for(let i=0;i<14;i++){
+   const t=i/13,a=i*2.399963;
+   const r=2.4*Math.sin(Math.PI*t);
+
+   point(
+    x+Math.cos(a)*r,130+height+t*8,
+    z+Math.sin(a)*r,4,2.3,.85,rand()*6.28
+   );
+  }
+ }
+
+ return {
+  points,
+  sprites:[
+   softHsl(40,.30,.87),
+   softHsl(350,.28,.75),
+   softHsl(265,.22,.78),
+   softHsl(42,.38,.78),
+   softHsl(15,.42,.80)
+  ].map(rgb=>flowerGlow(rgb.join(',')))
+ };
+}
+
+function drawBirthdayCake(time,add,list){
+ if(!birthdayCake)birthdayCake=buildBirthdayCake();
+
+ const size=.56+.44*clamp(bloom);
+
+ for(const p of birthdayCake.points){
+  const flame=p[6]>=0;
+  const flutter=flame?Math.sin(time*.006+p[6]):0;
+
+  add(
+   (p[0]+flutter*.55)*size,
+   85+(p[1]-85)*size,
+   p[2]*size,
+   p[3],p[4],
+   p[5]*(flame ? .88+.12*flutter : 1)
+  );
+ }
+
+ list.sort((a,b)=>a.d-b.d);
+ g.save();
+ g.globalCompositeOperation='lighter';
+
+ for(const p of list){
+  g.globalAlpha=p.alpha;
+
+  g.drawImage(
+   birthdayCake.sprites[p.color],
+   p.x-p.size,p.y-p.size,
+   p.size*2,p.size*2
+  );
+ }
+
+ g.restore();
+ g.globalAlpha=1;
+}const beforeBirthdayDraw=drawFlowerVariant;
+
+drawFlowerVariant=function(time,add,list){
+ if(flowerStyle==='cake'){
+  drawBirthdayCake(time,add,list);
+  return true;
+ }
+
+ return beforeBirthdayDraw(time,add,list);
+};
+
+const beforeBirthdayColor=randomFlowerColor;
+
+randomFlowerColor=function(){
+ if(flowerStyle==='cake'){
+  birthdayBurst();
+ }else{
+  beforeBirthdayColor();
+ }
+};
+
+const beforeBirthdayScene=updateSceneStyle;
+
+updateSceneStyle=function(){
+ beforeBirthdayScene();
+ birthdayLayer.replaceChildren();
+
+ if(flowerStyle==='cake'){
+  document.querySelector('header h1').textContent='愿岁皆欢';
+
+  document.querySelector('header p').innerHTML=
+   '三层星光，愿岁皆欢<br>转动90°，让祝福为你亮起';
+
+  document.title='愿岁皆欢 · 作者：杨瑞琪';
+  $('resetColor').disabled=true;
+  $('amount').setAttribute('aria-label','生日蛋糕舒展程度');
+
+  const labels=document.querySelectorAll('.labels span');
+  labels[0].textContent='收拢';
+  labels[2].textContent='舒展';
+
+  if(!active&&!starting){
+   status('手动预览 · 拖动滑杆控制蛋糕');
+  }
+ }
+};
+
+const beforeBirthdayStatus=status;
+
+status=function(message,hold=0){
+ if(flowerStyle==='cake'){
+  message=message
+   .replace('握拳 / 花苞','握拳 / 收拢')
+   .replace('张掌 / 盛放','张掌 / 舒展')
+   .replace('粒子花正在绽放','生日蛋糕随手舒展')
+   .replace('控制粒子花','控制蛋糕')
+   .replace('控制花朵','控制蛋糕');
+ }
+
+ beforeBirthdayStatus(message,hold);
+};
+
+/* 生日蛋糕功能结束 */
+})();
 </script>
 <script>
 (function(){
